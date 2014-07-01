@@ -1,0 +1,13 @@
+lib
+libs
+build
+jbuild
+androidbuild
+angstrombuild
+bin
+.project
+.cproject
+.autotools
+.settings
+.externalToolBuilders
+doc/html/
