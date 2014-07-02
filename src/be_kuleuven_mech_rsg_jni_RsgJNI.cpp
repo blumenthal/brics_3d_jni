@@ -1,6 +1,6 @@
 #include "be_kuleuven_mech_rsg_jni_RsgJNI.h"
 
-/* Generic inclides */
+/* Generic includes */
 #include <assert.h>
  #include <iomanip> // setprecision
 
@@ -25,10 +25,150 @@ using brics_3d::Logger;
 #define LOG_WARNING(...) ((void)__android_log_print(ANDROID_LOG_WARNING, "rsg-jni", __VA_ARGS__))
 #define LOG_ERROR(...) ((void)__android_log_print(ANDROID_LOG_ERROR, "rsg-jni", __VA_ARGS__))
 
+/* Global variables (for callbacks to virtual machine)*/
+static JavaVM *javaVMHandle; 											// Handle for the virtual machine
+static jobject interfaceObjectHandle; 									// Handle for a class instance of the interace jni interface class
+const char *interfaceClassPath = "be/kuleuven/mech/rsg/jni/RsgJNI";	// "Path" to the interface class. Needs to follow exact jni syntax
+
+/* Global world model variables */
 brics_3d::WorldModel* wm = 0;
 Logger::Listener*  androidLogger;
 brics_3d::rsg::DotGraphGenerator* wmPrinter = 0;
 HDF5UpdateDeserializer* wmUpdatesToHdf5deserializer = 0;
+HDF5UpdateSerializer* wmUpdatesToHdf5Serializer = 0;
+
+
+/*
+ * JNI helper functions
+ */
+void initializeClassHelper(JNIEnv *env, const char *path, jobject *objptr) {
+    jclass cls = env->FindClass(path);
+    if(!cls) {
+        LOG(ERROR)<< "initializeClassHelper: failed to get %s class reference" << path; //NOTE: LoggerListerner might not be attached already
+        return;
+    }
+    jmethodID constructor = env->GetMethodID(cls, "<init>", "()V");
+    if(!constructor) {
+    	LOG(ERROR) << "initializeClassHelper: failed to get %s constructor" << path;
+        return;
+    }
+    jobject obj = env->NewObject(cls, constructor);
+    if(!obj) {
+    	LOG(ERROR) << "initializeClassHelper: failed to create a %s object" << path;
+        return;
+    }
+    (*objptr) = env->NewGlobalRef(obj); //make object available as global reference
+
+}
+
+jint JNI_OnLoad(JavaVM* vm, void* reserved) {		//Will be executed when library is loaded
+	LOG(INFO) << "Loading rsg-jni shared library (build: " << __DATE__ << " " << __TIME__ << ").";
+
+	javaVMHandle = vm; 								// Make virtual machine reference available for all threads/functions
+    JNIEnv *env = 0;
+
+    if (vm->GetEnv((void**) &env, JNI_VERSION_1_4) != JNI_OK) {
+        LOG(ERROR) << "Failed to get the environment using GetEnv()";
+        return -1;
+    }
+    initializeClassHelper(env, interfaceClassPath, &interfaceObjectHandle);
+	return JNI_VERSION_1_4; 						//1.4 Provides will be moslt likely sufficiant, but could be even lower(?)
+}
+
+void triggerJNIDataCallback(jbyteArray dataBuffer, jint dataLength) {
+	std::string methodName = "onWriteUpdateToOutputPort";
+
+    int jniStatus = 0;		// For return values of jni functions
+    JNIEnv *env = 0;		// NOTE: Each thread has its own "environment" => cannot be a global variable
+
+    /* Before we detach we have to check if it is danderour to do so (can cause: ERROR: detaching thread with interp frames)
+     * cf. https://groups.google.com/forum/#!topic/android-ndk/2H8z5grNqjo
+     */
+    bool attached = false;
+
+    switch (javaVMHandle->GetEnv((void**)&env, JNI_VERSION_1_6)) {
+    case JNI_OK:
+    	break;
+    case JNI_EDETACHED:
+    	if (javaVMHandle->AttachCurrentThread(&env, NULL)!=0)
+    	{
+    		LOG(ERROR) << "triggerJNIDataCallback: failed to attach, current thread";
+    	}
+    	attached = true;
+    	return;
+    case JNI_EVERSION:
+    	LOG(ERROR) << "triggerJNIDataCallback: Invalid java version-";
+    }
+
+	jclass cls = env->GetObjectClass(interfaceObjectHandle);
+    if(!cls) {
+        LOG(ERROR) << "triggerJNIDataCallback: failed to get class reference";
+        javaVMHandle->DetachCurrentThread(); //Nerver forget to detach, otherwise the callback can get stuck!
+        return;
+    }
+
+	jmethodID method = env->GetStaticMethodID(cls, methodName.c_str(), "([BI)I"); // ([BI)I
+    if(!method) {
+        LOG(ERROR) << "triggerJNIDataCallback: failed to get method ID";
+        javaVMHandle->DetachCurrentThread(); //Nerver forget to detach, otherwise the callback can get stuck!
+        return;
+    }
+
+    /* finally call the function... */
+    env->CallIntMethod(interfaceObjectHandle, method, dataBuffer, dataLength);
+
+    if (attached){
+    	javaVMHandle->DetachCurrentThread(); //Nerver forget to detach, otherwise the callback can get stuck!
+    }
+
+}
+
+/**
+ * Implementation of OUT data transmission.
+ *
+ * A serialized UDF "messages" is send via via its corresbonding JNI callback.
+ * The Java application will then decide what to do next.
+ */
+class HSDF5JNIOutputBridge : public brics_3d::rsg::IOutputPort {
+public:
+	HSDF5JNIOutputBridge() : debugTag("HSDF5JNIOutputBridge") {
+		LOG(DEBUG) << debugTag << " created.";
+	};
+
+	virtual ~HSDF5JNIOutputBridge(){};
+
+	int write(const char *dataBuffer, int dataLength, int &transferredBytes) {
+		LOG(DEBUG) << debugTag << " writing to port.";
+
+		JNIEnv *env = 0;
+	    javaVMHandle->GetEnv((void**)&env, JNI_VERSION_1_6);
+
+		jbyteArray res = NULL;
+		jbyteArray dataArray = env->NewByteArray(dataLength);
+		if(dataArray == NULL || env->ExceptionCheck() == JNI_TRUE) {
+			LOG(ERROR) << debugTag << " Can not allocate a new jbyteArray";
+		} else {
+			env->SetByteArrayRegion(dataArray, 0, dataLength, (const signed char*) dataBuffer);
+			if(env->ExceptionCheck() == JNI_TRUE) {
+				LOG(ERROR) << debugTag << " Can not fill  jbyteArray with size " << dataLength;
+			} else {
+				res = dataArray;
+			}
+		}
+
+		if(res == 0 && dataArray != 0) {
+			env->DeleteLocalRef(dataArray);
+			return -1;
+		}
+
+		triggerJNIDataCallback(dataArray, dataLength);
+		return 0; //TODO
+	};
+
+private:
+	std::string debugTag;
+
+};
 
 JNIEXPORT jboolean JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_initialize
   (JNIEnv *, jclass) {
@@ -52,6 +192,10 @@ JNIEXPORT jboolean JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_initialize
 
 	/* Init ports */
 #ifdef	BRICS_HDF5_ENABLE
+	HSDF5JNIOutputBridge* jniOutBridge = new HSDF5JNIOutputBridge();
+	brics_3d::rsg::HDF5UpdateSerializer* wmUpdatesToHdf5Serializer = new brics_3d::rsg::HDF5UpdateSerializer(jniOutBridge);
+	wm->scene.attachUpdateObserver(wmUpdatesToHdf5Serializer);
+
 	wmUpdatesToHdf5deserializer = new HDF5UpdateDeserializer(wm);
 	LOG(INFO) << "HDF5 support is enabled.";
 #endif
@@ -69,6 +213,7 @@ JNIEXPORT jboolean JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_cleanup
 	delete wmPrinter;
 #ifdef	BRICS_HDF5_ENABLE
 	delete wmUpdatesToHdf5deserializer;
+	delete wmUpdatesToHdf5Serializer;
 #endif
 }
 
