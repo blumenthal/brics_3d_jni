@@ -8,14 +8,43 @@ FIND_PACKAGE(Eigen REQUIRED)
 ADD_DEFINITIONS(-DEIGEN3)
 
 
-#SET(Boost_USE_STATIC_LIBS ON)
-#SET(Boost_ADDITIONAL_VERSIONS "1.39" "1.39.0" "1.40" "1.40.0" "1.41" "1.41.0"  "1.42" "1.42.0")
-#FIND_PACKAGE(Boost COMPONENTS thread)
-#IF (NOT Boost_INCLUDE_DIR)
-#  MESSAGE(SEND_ERROR "WARNING: Boost not found")
-#ELSE (NOT Boost_INCLUDE_DIR) 
-#  MESSAGE(STATUS "SUCCESSFUL: Boost found")
-#ENDIF()
+# search for HDF5 (>= 1.8.9)
+#
+# for version 1.8.12 or higher please define the following flag : HDF_1_8_12_OR_HIGHER
+# due to incompatible API changes in the HDF5 library.
+OPTION(USE_HDF5 "Enable HDF5 Support" OFF)
+IF(USE_HDF5)
+
+    # only newer versions of FindHDF5.cmake exctract the HDF5_ROOT from the environment variable
+    # - so we do it manually here
+    IF("$ENV{HDF5_ROOT}" STREQUAL "")
+        #nothing special here      
+    ELSE("$ENV{HDF5_ROOT}" STREQUAL "")
+        SET(HDF5_ROOT $ENV{HDF5_ROOT})
+        SET(USE_HDF5_NON_DEFAULT_PATH TRUE) 
+        MESSAGE(STATUS "INFO: HDF5_ROOT set as: $ENV{HDF5_ROOT}")
+    ENDIF("$ENV{HDF5_ROOT}" STREQUAL "")
+  
+    FIND_PACKAGE(HDF5 REQUIRED COMPONENTS CXX HL)
+    IF(USE_HDF5_NON_DEFAULT_PATH) #override results
+        SET(HDF5_CXX_INCLUDE_DIR ${HDF5_ROOT}/include)        
+        SET(HDF5_LIBRARIES 
+            ${HDF5_ROOT}/lib/libhdf5_hl_debug.a
+            ${HDF5_ROOT}/lib/libhdf5_cpp_debug.a
+            ${HDF5_ROOT}/lib/libhdf5_debug.a
+            CACHE STRING "Accumulated HDF5 libraries."   
+        )
+    ENDIF(USE_HDF5_NON_DEFAULT_PATH)   
+    MESSAGE(STATUS "INFO: used HDF5_LIBRARIES: ${HDF5_LIBRARIES}")
+
+    IF (HDF5_FOUND)
+      MESSAGE(STATUS "SUCCESSFUL: HDF5 found")
+      ADD_DEFINITIONS(-DBRICS_HDF5_ENABLE)     
+    ELSE (HDF5_FOUND)
+      MESSAGE(SEND_ERROR "WARNING: HDF5 not found.")
+    ENDIF (HDF5_FOUND)
+ENDIF(USE_HDF5)
+
 
 # add include directories (-I)
 INCLUDE_DIRECTORIES(${BRICS_3D_INCLUDE_DIRS})

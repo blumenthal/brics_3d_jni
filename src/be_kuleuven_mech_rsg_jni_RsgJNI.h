@@ -271,6 +271,14 @@ JNIEXPORT jstring JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_getValueFromAttri
 JNIEXPORT void JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_dispose
   (JNIEnv *, jclass, jlong);
 
+/*
+ * Class:     be_kuleuven_mech_rsg_jni_RsgJNI
+ * Method:    writeUpdateToInputPort
+ * Signature: ([BI)I
+ */
+JNIEXPORT jint JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_writeUpdateToInputPort
+  (JNIEnv *, jclass, jbyteArray, jint);
+
 #ifdef __cplusplus
 }
 #endif

@@ -12,7 +12,8 @@
 #include <brics_3d/core/HomogeneousMatrix44.h>
 #include <brics_3d/worldModel/WorldModel.h>
 #include <brics_3d/worldModel/sceneGraph/DotGraphGenerator.h>
-
+#include <brics_3d/worldModel/sceneGraph/HDF5UpdateSerializer.h>
+#include <brics_3d/worldModel/sceneGraph/HDF5UpdateDeserializer.h>
 
 using namespace brics_3d;
 using namespace brics_3d::rsg;
@@ -27,6 +28,7 @@ using brics_3d::Logger;
 brics_3d::WorldModel* wm = 0;
 Logger::Listener*  androidLogger;
 brics_3d::rsg::DotGraphGenerator* wmPrinter = 0;
+HDF5UpdateDeserializer* wmUpdatesToHdf5deserializer = 0;
 
 JNIEXPORT jboolean JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_initialize
   (JNIEnv *, jclass) {
@@ -48,6 +50,12 @@ JNIEXPORT jboolean JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_initialize
 	/* See if the logger works right at the beginning. */
 	LOG(INFO) << "A new world model instance has been created. (build " << __DATE__ << " " << __TIME__ << ")";
 
+	/* Init ports */
+#ifdef	BRICS_HDF5_ENABLE
+	wmUpdatesToHdf5deserializer = new HDF5UpdateDeserializer(wm);
+	LOG(INFO) << "HDF5 support is enabled.";
+#endif
+
 	return true;
 }
 
@@ -59,6 +67,9 @@ JNIEXPORT jboolean JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_cleanup
 	Logger::setListener(0);
 	delete androidLogger;
 	delete wmPrinter;
+#ifdef	BRICS_HDF5_ENABLE
+	delete wmUpdatesToHdf5deserializer;
+#endif
 }
 
 JNIEXPORT void JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_insertTransform
@@ -336,8 +347,12 @@ JNIEXPORT jdouble JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_getBoxSizeZ
 JNIEXPORT jboolean JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_isBox
   (JNIEnv *, jclass, jlong shapePtr) {
 
+	if(shapePtr == 0) {
+		LOG(WARNING) << "isBox? ptr = " << shapePtr;
+		return false;
+	}
+
 	Shape* shape = reinterpret_cast<Shape*>(shapePtr);
-	assert(shape != 0);
 	Box* box = dynamic_cast<Box*>(shape);
 	return (box != 0);
 }
@@ -362,8 +377,12 @@ JNIEXPORT jdouble JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_getSphereRadius
 JNIEXPORT jboolean JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_isSphere
   (JNIEnv *, jclass, jlong shapePtr) {
 
+	if(shapePtr == 0) {
+		LOG(WARNING) << "isSphere? ptr = " << shapePtr;
+		return false;
+	}
+
 	Shape* shape = reinterpret_cast<Shape*>(shapePtr);
-	assert(shape != 0);
 	Sphere* sphere = dynamic_cast<Sphere*>(shape);
 	return (sphere != 0);
 }
@@ -466,4 +485,41 @@ JNIEXPORT void JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_dispose
   (JNIEnv *, jclass, jlong ptr) {
 	LOG(DEBUG) << "Deleting object.";
 	delete (void*)ptr;
+}
+
+JNIEXPORT jint JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_writeUpdateToInputPort
+  (JNIEnv* env, jclass, jbyteArray dataBuffer, jint dataLength) {
+
+	//Note: jbyteArray comes in as _unsigned_ char...
+
+	int returnValue = -1;
+	LOG(DEBUG) << "Recieved a new update massage with data length = " << dataLength;
+
+	jboolean isCopy;
+	jbyte* a = env->GetByteArrayElements(dataBuffer, &isCopy);
+
+	char *buffer = new char [dataLength];
+	memcpy(buffer, a, dataLength);
+
+
+	//int returnValue =  port->write(buffer, length, transferredBytes);
+//	for (int i = 0; i < dataLength; ++i) {
+//		LOG(DEBUG) << std::hex << (unsigned char)buffer[i];
+//		LOG(DEBUG) << (int)buffer[i];
+//	}
+
+	int transferredBytes;
+	if (wmUpdatesToHdf5deserializer != 0) {
+		LOG(DEBUG) << "Performing update to world model";
+		returnValue = wmUpdatesToHdf5deserializer->write(buffer, dataLength, transferredBytes);
+	}
+	LOG(DEBUG) << "RsgJNI_writeUpdateToInputPort: \t" << transferredBytes << " bytes transferred.";
+
+	/* Just print what the world model has to offer. */
+	wmPrinter->reset();
+	wm->scene.executeGraphTraverser(wmPrinter, wm->getRootNodeId());
+	LOG(DEBUG) << "sgJNI_writeUpdateToInputPort: Current state of the world model = " << std::endl << wmPrinter->getDotGraph();
+
+	delete buffer;
+	return returnValue;
 }

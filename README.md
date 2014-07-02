@@ -20,7 +20,7 @@ Compilation:
  ```
  	mkdir androidbuild
 	cd androidbuild
-	cmake -DCMAKE_TOOLCHAIN_FILE=<path_to_android-cmake_file> -DARM_TARGET=armeabi ..
+	cmake -DCMAKE_TOOLCHAIN_FILE=<path_to_android-cmake_file/android.toolchain.cmake> -DARM_TARGET=armeabi ..
 	make
  ```
  
