@@ -176,6 +176,12 @@ JNIEXPORT jboolean JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_initialize
 	LOG_INFO("Initialize RSG world model.");
 	wm = new WorldModel();
 
+	/*
+	 * Policy for error propagation (= call of observers):
+	 * Here we don't propagete them to prevent "ping pong" updates.
+	 */
+	wm->scene.setCallObserversEvenIfErrorsOccurred(false);
+
 	/* Setup logger */
 	androidLogger = new AndroidLoggerListener();
 	Logger::setMinLoglevel(Logger::LOGDEBUG);
