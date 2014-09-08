@@ -2,7 +2,7 @@
 
 /* Generic includes */
 #include <assert.h>
- #include <iomanip> // setprecision
+#include <iomanip> // setprecision
 
 /* Android related includes */
 #include <android/log.h>
