@@ -1,16 +1,21 @@
-#JNI Wrapper for the RobotSceneGraph as part of the BRICS_3D library
+#JNI Wrapper for the BRICS_3D library
 
 What is it?
 -----------
  
-This project provides a thin JNI wrapper layer for the BRICS_3D library. The target system is Android.
+This project provides a thin JNI wrapper layer for the *Robot Scene Graph* [(RSG)]
+(http://www.best-of-robotics.org/brics_3d/worldmodel.html) part of the BRICS_3D library. 
+The target system is *Android*.
 
-This package sists of thre packages
+This package consists of three packages:
 
-1. A shared C++ libray called  [brics_3d-jni](cpp/README.md) (brics_3d-jni.so) that provides the C++ part of the wrapper.    
-2. The corresponting [Java RobotSceneGraph](java/README.md) (robotscenegraph.jar) that reprents the jave part to the wrapper.
-3. [Example](examples/README.md) Android applications that make use of the above library. Both above packages are a prerequisite
-  that have to be included as references in the "libs" folder of an Android application. 
+1. A shared C++ libray called  [brics_3d-jni](cpp/README.md) (`brics_3d-jni.so`) 
+   that provides the C++ part of the wrapper.    
+2. The corresponting [Java RobotSceneGraph](java/README.md) (`robotscenegraph.jar`) 
+   that reprents the Java part of the wrapper.
+3. [Example](examples/README.md) Android applications that make use of the above 
+   libraries. Both above packages are a prerequisite
+   that have to be included as references in the "libs" folder of an Android application. 
 
  
 Licensing

@@ -3,7 +3,7 @@
 What is it?
 -----------
  
-This project represnts the Java part of the wrapper. It is a set of of Java 
+This project represents the Java part of the wrapper. It is a set of of Java 
 classes for basic querying and modification of the RSG. Currently it wraps the 
 ["High-level API"](http://www.best-of-robotics.org/brics_3d/worldmodel.html#worldmodel_secene_objects_api ) 
 which essentially reduces the usage of the world model to so called *SceneObjects*. 
@@ -18,7 +18,7 @@ The RobotSceneGraph project has been created with the Eclipse based Android SDK
 file called `robotscenegraph.jar`. 
 
 
-Usage wihtin applications
+Usage within applications
 -------------------------
 
 Create a new Android project and import the C++ and Java libraries as follows:
@@ -70,4 +70,4 @@ Example snippet
 			
 ```
 
- 
+ Further examples can be found in the [examples](../examples/README.md) section.
