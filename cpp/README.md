@@ -9,7 +9,7 @@ It provides functionality for using the Robot Scene Graph (RSG) that is a subset
 Installation
 ------------
 
-A precompiled binary can he found [here](www.best-of-robotics.org/brics_3d/downloads/libbrics_3d-jni.so). 
+A precompiled binary can he found [here](http://www.best-of-robotics.org/brics_3d/downloads/libbrics_3d-jni.so). 
 To retrive the latest version follow the steps below: 
 
 Dependencies:
