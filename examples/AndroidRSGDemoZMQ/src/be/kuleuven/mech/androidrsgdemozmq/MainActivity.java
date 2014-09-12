@@ -160,6 +160,7 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 		int processedBytes = RsgJNI.writeUpdateToInputPort(testData, testData.length);
 		
 //		listenerThread = new Thread(new WorldModelUpdatesListener());
+//		listenerThread = new Thread(new WorldModelUpdatesListener("tcp://192.168.1.101:11511"));
 		listenerThread = new Thread(new WorldModelUpdatesListener("tcp://192.168.1.101:11511"));
 		listenerThread.start();
 		
@@ -353,7 +354,7 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 			this.zmqInputConnectionSpecification = zmqInputConnectionSpecification;
 			
 	        context = ZMQ.context(1);
-	        ZMQ.Socket subscriber = context.socket(ZMQ.SUB);
+	        subscriber = context.socket(ZMQ.SUB);
 	        subscriber.connect(zmqInputConnectionSpecification);
 	        
 //	        subscriber->setsockopt(ZMQ_SUBSCRIBE, "1", 0);
@@ -374,7 +375,7 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 				try {
 					
 					/* Receive data */
-					byte[] message = subscriber.recv();
+					byte[] message = subscriber.recv(); // null Pointer
 					String text = new String(message, 0, message.length);
 					Log.d(logTag, "message: with length" +  message.length + " = " + text);
 					
