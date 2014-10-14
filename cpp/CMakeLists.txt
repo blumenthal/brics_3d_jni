@@ -29,22 +29,36 @@ IF(USE_HDF5)
     IF(USE_HDF5_NON_DEFAULT_PATH) #override results
         SET(HDF5_CXX_INCLUDE_DIR ${HDF5_ROOT}/include)        
         SET(HDF5_LIBRARIES 
-            ${HDF5_ROOT}/lib/libhdf5_hl_debug.a
-            ${HDF5_ROOT}/lib/libhdf5_cpp_debug.a
-            ${HDF5_ROOT}/lib/libhdf5_debug.a
-            CACHE STRING "Accumulated HDF5 libraries."   
+            ${HDF5_ROOT}/lib/libhdf5_hl_debug.so
+            ${HDF5_ROOT}/lib/libhdf5_cpp_debug.so
+            ${HDF5_ROOT}/lib/libhdf5_debug.so
+            #CACHE STRING "Accumulated HDF5 libraries."   
         )
     ENDIF(USE_HDF5_NON_DEFAULT_PATH)   
     MESSAGE(STATUS "INFO: used HDF5_LIBRARIES: ${HDF5_LIBRARIES}")
 
     IF (HDF5_FOUND)
       MESSAGE(STATUS "SUCCESSFUL: HDF5 found")
-      ADD_DEFINITIONS(-DBRICS_HDF5_ENABLE)     
+      ADD_DEFINITIONS(-DBRICS_HDF5_ENABLE)
+      INCLUDE_DIRECTORIES(${HDF5_CXX_INCLUDE_DIR})     
     ELSE (HDF5_FOUND)
       MESSAGE(SEND_ERROR "WARNING: HDF5 not found.")
     ENDIF (HDF5_FOUND)
 ENDIF(USE_HDF5)
 
+IF(ANDROID)
+    #JNI is found automatically
+ELSE(ANDROID)
+    MESSAGE(STATUS "This is not an Android build. Searching for JNI.")
+    FIND_PACKAGE(JNI)
+    IF (JNI_FOUND)
+        MESSAGE (STATUS "JNI_INCLUDE_DIRS=${JNI_INCLUDE_DIRS}")
+        MESSAGE (STATUS "JNI_LIBRARIES=${JNI_LIBRARIES}")
+        INCLUDE_DIRECTORIES(${JNI_INCLUDE_DIRS})      
+    ELSE(JNI_FOUND)
+        MESSAGE(SEND_ERROR "ERROR: JNI not found.")
+    ENDIF(JNI_FOUND)
+ENDIF(ANDROID)
 
 # add include directories (-I)
 INCLUDE_DIRECTORIES(${BRICS_3D_INCLUDE_DIRS})

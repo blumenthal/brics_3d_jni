@@ -5,8 +5,10 @@
 #include <iomanip> // setprecision
 
 /* Android related includes */
+#ifdef ANDROID
 #include <android/log.h>
 #include "AndroidLoggerListener.h"
+#endif
 
 /* BRICS_3D includes for the world model */
 #include <brics_3d/core/HomogeneousMatrix44.h>
@@ -20,10 +22,14 @@ using namespace brics_3d::rsg;
 using brics_3d::Logger;
 
 /* Macros for Android loggers */
+#ifdef ANDROID
 #define LOG_INFO(...) ((void)__android_log_print(ANDROID_LOG_INFO, "rsg-jni", __VA_ARGS__))
 #define LOG_DEBUG(...) ((void)__android_log_print(ANDROID_LOG_DEBUG, "rsg-jni", __VA_ARGS__))
 #define LOG_WARNING(...) ((void)__android_log_print(ANDROID_LOG_WARNING, "rsg-jni", __VA_ARGS__))
 #define LOG_ERROR(...) ((void)__android_log_print(ANDROID_LOG_ERROR, "rsg-jni", __VA_ARGS__))
+#else
+#define LOG_INFO(...) (LOG(INFO) << __VA_ARGS__))
+#endif
 
 /* Global variables (for callbacks to virtual machine)*/
 static JavaVM *javaVMHandle; 											// Handle for the virtual machine
@@ -173,7 +179,7 @@ private:
 JNIEXPORT jboolean JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_initialize
   (JNIEnv *, jclass) {
 
-	LOG_INFO("Initialize RSG world model.");
+//	LOG_INFO("Initialize RSG world model.");
 	wm = new WorldModel();
 
 	/*
@@ -183,9 +189,11 @@ JNIEXPORT jboolean JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_initialize
 	wm->scene.setCallObserversEvenIfErrorsOccurred(false);
 
 	/* Setup logger */
-	androidLogger = new AndroidLoggerListener();
 	Logger::setMinLoglevel(Logger::LOGDEBUG);
+#ifdef ANDROID
+	androidLogger = new AndroidLoggerListener();
 	Logger::setListener(androidLogger);
+#endif
 
 	/* Setup graph printer helper tool */
 	wmPrinter = new brics_3d::rsg::DotGraphGenerator();
