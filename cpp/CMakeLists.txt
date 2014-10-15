@@ -28,12 +28,22 @@ IF(USE_HDF5)
     FIND_PACKAGE(HDF5 REQUIRED COMPONENTS CXX HL)
     IF(USE_HDF5_NON_DEFAULT_PATH) #override results
         SET(HDF5_CXX_INCLUDE_DIR ${HDF5_ROOT}/include)        
-        SET(HDF5_LIBRARIES 
+
+IF(ANDROID)
+        # For Android we need static libraries...
+        SET(HDF5_LIBRARIES         
+            ${HDF5_ROOT}/lib/libhdf5_hl_debug.a
+            ${HDF5_ROOT}/lib/libhdf5_cpp_debug.a
+            ${HDF5_ROOT}/lib/libhdf5_debug.a
+        )    
+ELSE(ANDROID)
+        SET(HDF5_LIBRARIES    
             ${HDF5_ROOT}/lib/libhdf5_hl_debug.so
             ${HDF5_ROOT}/lib/libhdf5_cpp_debug.so
             ${HDF5_ROOT}/lib/libhdf5_debug.so
-            #CACHE STRING "Accumulated HDF5 libraries."   
-        )
+        )    
+ENDIF(ANDROID)                       
+                    
     ENDIF(USE_HDF5_NON_DEFAULT_PATH)   
     MESSAGE(STATUS "INFO: used HDF5_LIBRARIES: ${HDF5_LIBRARIES}")
 
