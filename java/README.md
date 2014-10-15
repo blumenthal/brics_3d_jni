@@ -18,8 +18,8 @@ The RobotSceneGraph project has been created with the Eclipse based Android SDK
 file called `robotscenegraph.jar`. 
 
 
-Usage within applications
--------------------------
+Usage within Android applications 
+---------------------------------
 
 Create a new Android project and import the C++ and Java libraries as follows:
 
@@ -38,6 +38,32 @@ Create a new Android project and import the C++ and Java libraries as follows:
 	import be.kuleuven.mech.rsg.jni.RsgJNI;
 ```
 
+Usage within Java applications 
+---------------------------------
+
+Create a new Java project and import the C++ and Java libraries as follows:
+
+1. Reference to the libray robotscenegraph.jar in the project settings: Properties -> Java Build Path -> Librariay -> Add JARS...
+   Note: for a Java project it is not necessary to copy the the libraries to the new project.
+   ![rsg_add_jar.png](doc/figures/rsg_add_jar.png)	
+
+2. Reference to the native library by attaching it to the in the project settings: Properties -> Java Build Path -> robotscenegraph.jar -> Native library
+
+   ![rsg_add_native_lib.png](doc/figures/rsg_add_native_lib.png)
+3. Use the RSG by importing the library in the source code: 
+
+
+```java
+	import be.kuleuven.mech.rsg.*;
+	import be.kuleuven.mech.rsg.jni.RsgJNI;
+```
+
+4. Disable the the Android logger by using:
+
+```java
+	Logger.setUseAndroidLogger(false); 
+
+```
 Example snippet
 ---------------
 
