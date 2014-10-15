@@ -1,6 +1,7 @@
 package be.kuleuven.mech.rsg.jni;
 
 import be.kuleuven.mech.rsg.IOutputPort;
+import be.kuleuven.mech.rsg.Logger;
 import android.util.Log;
 
 public class RsgJNI {
@@ -81,11 +82,11 @@ public class RsgJNI {
 	}
 	
 	private static int onWriteUpdateToOutputPort(byte dataBuffer[],  int dataLength) {
-		Log.i("onWriteUpdateToOutputPort", dataLength + " bytes to be send.");
+		Logger.info("onWriteUpdateToOutputPort", dataLength + " bytes to be send.");
 		 if(outPort != null) {
 			 return outPort.write(dataBuffer, dataLength); 
 		 }
-		 Log.w("onWriteUpdateToOutputPort", "The outPort is not configured. Skipping message");
+		 Logger.warning("onWriteUpdateToOutputPort", "The outPort is not configured. Skipping message");
 		return -1;
 	}
 }

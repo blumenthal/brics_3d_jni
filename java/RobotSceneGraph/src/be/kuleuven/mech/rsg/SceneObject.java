@@ -93,7 +93,7 @@ public class SceneObject {
 		assert (attributesPtr != 0);
 		
 		for(Attribute a: attributes) {
-			Log.d(tag, "Adding: " + a.toString());
+			Logger.debug(tag, "Adding: " + a.toString());
 			RsgJNI.addAttributeToAttributeList(a.key, a.value, attributesPtr);
 		}
 		
@@ -110,7 +110,7 @@ public class SceneObject {
 			String tmpKey = RsgJNI.getKeyFromAttributeList(i, attributesPtr);
 			String tmpValue = RsgJNI.getValueFromAttributeList(i, attributesPtr);
 			Attribute tmpAttribute = new Attribute(tmpKey, tmpValue);
-			Log.d(tag, "Retrieved: " + tmpAttribute.toString());
+			Logger.debug(tag, "Retrieved: " + tmpAttribute.toString());
 			attributes.add(tmpAttribute);			
 		}
 		

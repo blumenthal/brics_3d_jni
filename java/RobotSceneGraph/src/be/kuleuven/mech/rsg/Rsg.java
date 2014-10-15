@@ -21,7 +21,8 @@ public class Rsg {
 	 * @return True on success.
 	 */
 	public static boolean initializeWorldModel() {
-		Log.d("Rsg-API", "Loading RSG C++ library.");
+		//Log.d("Rsg-API", "Loading RSG C++ library.");
+		Logger.debug("Rsg-API", "Loading RSG C++ library.");
 		System.loadLibrary("brics_3d-jni"); // RSG is a part of brics_3d
 		return RsgJNI.initialize();
 	}
@@ -49,7 +50,7 @@ public class Rsg {
 		assert (attributesPtr != 0);
 		
 		for(Attribute a: attributes) {
-			Log.d("getSceneObjects", "Adding attribute to query : " + a.toString());
+			Logger.debug("getSceneObjects", "Adding attribute to query : " + a.toString());
 			RsgJNI.addAttributeToAttributeList(a.key, a.value, attributesPtr);
 		}
 		
