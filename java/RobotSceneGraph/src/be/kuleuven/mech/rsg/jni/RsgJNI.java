@@ -9,6 +9,7 @@ public class RsgJNI {
 	
 	public static native boolean initialize();	
 	public static native boolean cleanup();
+	public static native boolean resend();
 	
 //	C++ pendenats:	
 //  void getSceneObjects(vector<rsg::Attribute> attributes, vector<SceneObject>& results);
@@ -89,4 +90,5 @@ public class RsgJNI {
 		 Logger.warning("onWriteUpdateToOutputPort", "The outPort is not configured. Skipping message");
 		return -1;
 	}
+	
 }

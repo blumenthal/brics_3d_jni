@@ -9,7 +9,6 @@ import java.util.ArrayList;
 
 import be.kuleuven.mech.rsg.*;
 import be.kuleuven.mech.rsg.jni.RsgJNI;
-
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiManager.MulticastLock;
 import android.os.AsyncTask;
@@ -22,6 +21,7 @@ import android.view.Menu;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
+
 
 //import org.jeromq.ZMQ; depends on used version of JeroMQ
 import org.zeromq.ZMQ;
@@ -51,6 +51,7 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 	private TextView yValueText;
 	private TextView numberOfObjectsText;
 	
+	boolean isFirstUpdate = true;
 	
 	
 	@Override
@@ -161,10 +162,15 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 		
 //		listenerThread = new Thread(new WorldModelUpdatesListener());
 //		listenerThread = new Thread(new WorldModelUpdatesListener("tcp://192.168.1.101:11511"));
-		listenerThread = new Thread(new WorldModelUpdatesListener("tcp://192.168.1.101:11511"));
+		listenerThread = new Thread(new WorldModelUpdatesListener("tcp://192.168.1.105:11511"));
 		listenerThread.start();
 		
 		displayObstacleCoordinates();
+		
+
+		Rsg.resendWorldModel(); 
+
+
 		
 		Log.i(logTag, "Done.");
 	}
@@ -318,6 +324,13 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 	    	
 			displayObstacleCoordinates();			
 			onWorldModelUpdate();
+			
+			if (isFirstUpdate) {
+				
+				Rsg.resendWorldModel();
+				isFirstUpdate = false;
+				Log.w("onProgressChanged", "Rsg.resendWorldModel()");
+			}
     	}
     }
 	
@@ -421,12 +434,14 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 	        ZMQ.Context context = ZMQ.context(1); // create globally?!?
 	        publisher = context.socket(ZMQ.PUB);
 	        publisher.bind(this.zmqConnectionSpecification);
+	        Log.i("WorldModelUpdatesBroadcaster", "Init done.");
 		}
 		
 		@Override
 		public int write(byte[] dataBuffer, int dataLength) {
 
 			try {
+				Log.i("WorldModelUpdatesBroadcaster", "Trying to publish " + dataLength + " bytes.");
 				publisher.send(dataBuffer);				
 			} catch (Exception e) {
 				Log.w("WorldModelUpdatesBroadcaster", e);

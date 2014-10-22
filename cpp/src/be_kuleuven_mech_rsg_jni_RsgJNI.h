@@ -25,6 +25,14 @@ JNIEXPORT jboolean JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_cleanup
 
 /*
  * Class:     be_kuleuven_mech_rsg_jni_RsgJNI
+ * Method:    resend
+ * Signature: ()Z
+ */
+JNIEXPORT jboolean JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_resend
+  (JNIEnv *, jclass);
+
+/*
+ * Class:     be_kuleuven_mech_rsg_jni_RsgJNI
  * Method:    getSceneObjects
  * Signature: (J)[J
  */

@@ -31,10 +31,18 @@ public class Rsg {
 	/**
 	 * @brief Clean up all stored data of the world model. 
 	 * Invoke initializeWorldModel() to continue working with the world model.
-	 * @return
+	 * @return  True on success.
 	 */
 	public static boolean cleanupWorldModel() {
 		return RsgJNI.cleanup();
+	}
+	
+	/**
+	 * @brief Resend the complete world model to all the listeners. 
+	 * @return  True on success.
+	 */
+	public static boolean resendWorldModel() {
+		return RsgJNI.resend();
 	}
 	
 	/**

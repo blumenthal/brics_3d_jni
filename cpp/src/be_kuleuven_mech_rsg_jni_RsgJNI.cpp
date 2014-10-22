@@ -16,6 +16,7 @@
 #include <brics_3d/worldModel/sceneGraph/DotGraphGenerator.h>
 #include <brics_3d/worldModel/sceneGraph/HDF5UpdateSerializer.h>
 #include <brics_3d/worldModel/sceneGraph/HDF5UpdateDeserializer.h>
+#include <brics_3d/worldModel/sceneGraph/SceneGraphToUpdatesTraverser.h>
 
 using namespace brics_3d;
 using namespace brics_3d::rsg;
@@ -42,7 +43,7 @@ Logger::Listener*  androidLogger;
 brics_3d::rsg::DotGraphGenerator* wmPrinter = 0;
 HDF5UpdateDeserializer* wmUpdatesToHdf5deserializer = 0;
 HDF5UpdateSerializer* wmUpdatesToHdf5Serializer = 0;
-
+SceneGraphToUpdatesTraverser* wmResender = 0;
 
 /*
  * JNI helper functions
@@ -211,8 +212,13 @@ JNIEXPORT jboolean JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_initialize
 	wm->scene.attachUpdateObserver(wmUpdatesToHdf5Serializer);
 
 	wmUpdatesToHdf5deserializer = new HDF5UpdateDeserializer(wm);
+
+	/* Init resender */
+	wmResender = new brics_3d::rsg::SceneGraphToUpdatesTraverser(wmUpdatesToHdf5Serializer);
 	LOG(INFO) << "HDF5 support is enabled.";
 #endif
+
+
 
 	return true;
 }
@@ -221,14 +227,62 @@ JNIEXPORT jboolean JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_cleanup
   (JNIEnv *, jclass) {
 
 	LOG(INFO) << "Cleaning up world model.";
-	delete wm;
-	Logger::setListener(0);
-	delete androidLogger;
-	delete wmPrinter;
+	if(wm) {
+		delete wm;
+		wm = 0;
+		LOG(DEBUG) << "World model deleted.";
+	}
+
+	if(wmPrinter) {
+		delete wmPrinter;
+		wmPrinter = 0;
+	}
+
 #ifdef	BRICS_HDF5_ENABLE
-	delete wmUpdatesToHdf5deserializer;
-	delete wmUpdatesToHdf5Serializer;
+
+	if(wmUpdatesToHdf5deserializer) {
+		delete wmUpdatesToHdf5deserializer;
+		wmUpdatesToHdf5deserializer = 0;
+	}
+
+	if(wmUpdatesToHdf5deserializer) {
+		delete wmUpdatesToHdf5deserializer;
+		wmUpdatesToHdf5deserializer = 0;
+	}
+
+	if (wmUpdatesToHdf5Serializer) {
+		delete wmUpdatesToHdf5Serializer;
+		wmUpdatesToHdf5Serializer = 0;
+	}
+
+	if (wmResender) {
+		delete wmResender;
+		wmResender = 0;
+	}
+
 #endif
+
+	if (androidLogger) {
+		delete androidLogger;
+		androidLogger = 0;
+		LOG(DEBUG) << "Logger deleted.";
+		Logger::setListener(0);
+		LOG(DEBUG) << "Listener unset.";
+	}
+
+	return true;
+}
+
+JNIEXPORT jboolean JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_resend
+  (JNIEnv *, jclass) {
+
+#ifdef	BRICS_HDF5_ENABLE
+	LOG(INFO) << "Resending complete world model.";
+	wm->scene.executeGraphTraverser(wmResender, wm->getRootNodeId());
+	return true;
+#endif
+
+	return false;
 }
 
 JNIEXPORT void JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_insertTransform
