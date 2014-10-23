@@ -34,6 +34,7 @@ import org.zeromq.ZMQ;
 
 public class MainActivity extends Activity implements OnSeekBarChangeListener {
 
+	WorldModelUpdatesBroadcaster outputPort = null;
 	Thread listenerThread = null;
 	
 	String logTag = "YouBotWorldModel";
@@ -81,7 +82,7 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 		Rsg.initializeWorldModel(); // always start with that one.
 
 //		WorldModelUpdatesBroadcaster outputPort = new WorldModelUpdatesBroadcaster("tcp://192.168.1.101:11411");
-		WorldModelUpdatesBroadcaster outputPort = new WorldModelUpdatesBroadcaster("tcp://*:11411");
+		outputPort = new WorldModelUpdatesBroadcaster("tcp://*:11411");
 		Rsg.setOutPort(outputPort);
 		
 		virtualFence = new SceneObject();
@@ -276,6 +277,7 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 			listenerThread = null;
 		}
 		Rsg.cleanupWorldModel();
+		outputPort.cleanup();
 	}
 	
 	@Override
@@ -447,7 +449,14 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 				Log.w("WorldModelUpdatesBroadcaster", e);
 			}
 			return 0;
-		}	
+		}
+		
+		public void cleanup() {
+			Log.i(logTag, "Shutting down WorldModelUpdatesBroadcaster.");
+			if (publisher != null) {
+				publisher.close();	
+			}
+		}
 	}
 }
 

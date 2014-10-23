@@ -278,6 +278,7 @@ JNIEXPORT jboolean JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_resend
 
 #ifdef	BRICS_HDF5_ENABLE
 	LOG(INFO) << "Resending complete world model.";
+	wmResender->reset();
 	wm->scene.executeGraphTraverser(wmResender, wm->getRootNodeId());
 	return true;
 #endif
