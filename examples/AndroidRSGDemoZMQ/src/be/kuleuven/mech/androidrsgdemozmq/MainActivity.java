@@ -6,6 +6,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.List;
 
 import be.kuleuven.mech.rsg.*;
 import be.kuleuven.mech.rsg.jni.RsgJNI;
@@ -18,19 +19,27 @@ import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
 import android.view.Menu;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.ToggleButton;
+
+
+
 
 
 //import org.jeromq.ZMQ; depends on used version of JeroMQ
 import org.zeromq.ZMQ;
 
 
-
-/* _  _ */
 
 
 
@@ -55,6 +64,10 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 	private TextView yValueText;
 	private TextView numberOfObjectsText;
 	private ToggleButton motionToggle = null;
+	private Spinner sceneObjectPicker = null;
+	private ArrayAdapter<String> sceneObjectPickerAdapter;
+	List<String> sceneObjectPickerList = null;
+	String pickedScenObjectName  = "obstacle";
 	
 	boolean isFirstUpdate = true;
 	
@@ -76,7 +89,36 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 		numberOfObjectsText = (TextView) findViewById(R.id.textViewNumberOfObjects);
 		numberOfObjectsText.setText("no_value");
 		
-		ToggleButton motionToggle = (ToggleButton) findViewById(R.id.motionRoggleButton);
+		sceneObjectPickerList = new ArrayList<String>();
+//		list.add("Goal"); 
+//		list.add("Obj1"); 
+		sceneObjectPicker = (Spinner)findViewById(R.id.spinner);
+		sceneObjectPickerAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, sceneObjectPickerList);
+		sceneObjectPickerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		sceneObjectPicker.setAdapter(sceneObjectPickerAdapter);
+		sceneObjectPicker.setOnItemSelectedListener( new OnItemSelectedListener() {
+
+		    public void onItemSelected(AdapterView<?> arg0, View v, int position, long id) {
+		    	Log.i("onSpinnerClick", "onSpinnerClick");
+				//switch (v.getId()) {
+				//case R.id.spinner:
+					if(position != AdapterView.INVALID_POSITION){
+						pickedScenObjectName = sceneObjectPickerList.get(position);
+						Log.i("onSpinnerClick", "Setting pickedScenObjectName to: " + pickedScenObjectName);
+						displayObstacleCoordinates();
+					}
+				//	break;
+				//default:
+				//	break;
+				//}
+		    }
+
+		    public void onNothingSelected(AdapterView<?> v) {
+
+		    }
+		});
+		
+		motionToggle = (ToggleButton) findViewById(R.id.motionRoggleButton);
 		motionToggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 		    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 		        if (isChecked) {
@@ -93,9 +135,12 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 		    }
 		});
 		
+
 		
 		initializeWorldModel();
 		coordinator = new RobotMotionCoordinator("tcp://*:22422");
+		
+		
 
 	}	
 	
@@ -202,6 +247,10 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 
 
 	public void printSceneObjects(ArrayList<SceneObject> sceneOjects) {
+		
+		sceneObjectPickerList.clear();
+//		sceneObjectPickerAdapter.notifyDataSetChanged();
+		
 		for (SceneObject sceneObject : sceneOjects) {
 
 			/* Just print everything */
@@ -227,6 +276,11 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 
 			for (Attribute a : sceneObject.getAttributes()) {
 				Log.i(logTag, "	Scene Object has a attribute: " + a.toString()); 
+				if(a.key.compareTo("name") == 0) {
+					Log.i(logTag, "	Found a named object: " + a.value);
+					sceneObjectPickerList.add(a.value);
+//					sceneObjectPickerAdapter.notifyDataSetChanged();
+				}
 			}
 			
 			Log.i(logTag, "	------------");
@@ -237,7 +291,8 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 		double x = -1.0;
 		double y = -1.0;
 		ArrayList<Attribute> queryAttributes = new ArrayList<Attribute>();
-		queryAttributes.add(new Attribute("name", "obstacle"));
+//		queryAttributes.add(new Attribute("name", "obstacle"));
+		queryAttributes.add(new Attribute("name", pickedScenObjectName));		
 		ArrayList<SceneObject> foundSceneOjects = Rsg.getSceneObjects(queryAttributes);
 		Log.i("displayObstacleCoordinates", "Result (obsatcles) = found " + foundSceneOjects.size() + " Scene object(s)");
 		
@@ -321,7 +376,8 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
     	//yValueText.setText("changing");
     	
 		ArrayList<Attribute> queryAttributes = new ArrayList<Attribute>();
-		queryAttributes.add(new Attribute("name", "obstacle"));
+//		queryAttributes.add(new Attribute("name", "obstacle"));
+		queryAttributes.add(new Attribute("name", pickedScenObjectName));	
 		ArrayList<SceneObject> foundSceneOjects = Rsg.getSceneObjects(queryAttributes);
 		Log.i("onProgressChanged", "Result (obsatcles) = found " + foundSceneOjects.size() + " Scene object(s)");
     	
@@ -358,6 +414,8 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 				isFirstUpdate = false;
 				Log.w("onProgressChanged", "Rsg.resendWorldModel()");
 			}
+			
+			sceneObjectPickerAdapter.notifyDataSetChanged();
     	}
     }
 	
@@ -373,6 +431,7 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
     	//yValueText.setText("ended tracking touch");    	
     }
     
+
    
 	/**
 	 * ZMQ based communication mechanism for receiving world model update messages.

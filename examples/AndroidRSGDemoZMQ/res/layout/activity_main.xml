@@ -64,22 +64,6 @@
         android:layout_marginTop="40dp"
         android:text="Objects:" />
 
-    <RadioButton
-        android:id="@+id/radioButton1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_marginTop="15dp"
-        android:layout_toRightOf="@+id/TextView01"
-        android:text="RadioButton" />
-
-    <SeekBar
-        android:id="@+id/xSeekBar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/radioButton1"
-        android:layout_marginTop="18dp" />
-
     <SeekBar
         android:id="@+id/ySeekBar"
         android:layout_width="match_parent"
@@ -94,5 +78,20 @@
         android:layout_marginTop="18dp"
         android:layout_toRightOf="@+id/textView1"
         android:text="RobotMotion" />
+
+    <Spinner
+        android:id="@+id/spinner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true" />
+
+    <SeekBar
+        android:id="@+id/xSeekBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/ySeekBar"
+        android:layout_below="@+id/spinner"
+        android:layout_marginTop="17dp" />
 
 </RelativeLayout>
