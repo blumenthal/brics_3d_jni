@@ -18,9 +18,11 @@ import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
 import android.view.Menu;
+import android.widget.CompoundButton;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
 
 //import org.jeromq.ZMQ; depends on used version of JeroMQ
@@ -35,6 +37,7 @@ import org.zeromq.ZMQ;
 public class MainActivity extends Activity implements OnSeekBarChangeListener {
 
 	WorldModelUpdatesBroadcaster outputPort = null;
+	RobotMotionCoordinator coordinator = null;
 	Thread listenerThread = null;
 	
 	String logTag = "YouBotWorldModel";
@@ -51,6 +54,7 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 	private TextView xValueText;
 	private TextView yValueText;
 	private TextView numberOfObjectsText;
+	private ToggleButton motionToggle = null;
 	
 	boolean isFirstUpdate = true;
 	
@@ -72,7 +76,26 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 		numberOfObjectsText = (TextView) findViewById(R.id.textViewNumberOfObjects);
 		numberOfObjectsText.setText("no_value");
 		
+		ToggleButton motionToggle = (ToggleButton) findViewById(R.id.motionRoggleButton);
+		motionToggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+		    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+		        if (isChecked) {
+		            // The toggle is enabled
+		        	if (coordinator != null) {
+		        		coordinator.startMotion();
+		        	}
+		        } else {
+		            // The toggle is disabled
+		        	if (coordinator != null) {
+		        		coordinator.stopMotion();
+		        	}
+		        }
+		    }
+		});
+		
+		
 		initializeWorldModel();
+		coordinator = new RobotMotionCoordinator("tcp://*:22422");
 
 	}	
 	
@@ -84,6 +107,7 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 //		WorldModelUpdatesBroadcaster outputPort = new WorldModelUpdatesBroadcaster("tcp://192.168.1.101:11411");
 		outputPort = new WorldModelUpdatesBroadcaster("tcp://*:11411");
 		Rsg.setOutPort(outputPort);
+		
 		
 		virtualFence = new SceneObject();
 		obstacle = new SceneObject(); 
@@ -171,7 +195,7 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 
 		Rsg.resendWorldModel(); 
 
-
+	
 		
 		Log.i(logTag, "Done.");
 	}
@@ -278,6 +302,7 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 		}
 		Rsg.cleanupWorldModel();
 		outputPort.cleanup();
+		coordinator.cleanup();
 	}
 	
 	@Override
@@ -348,7 +373,7 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
     	//yValueText.setText("ended tracking touch");    	
     }
     
-    
+   
 	/**
 	 * ZMQ based communication mechanism for receiving world model update messages.
 	 */
@@ -453,6 +478,62 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 		
 		public void cleanup() {
 			Log.i(logTag, "Shutting down WorldModelUpdatesBroadcaster.");
+			if (publisher != null) {
+				publisher.close();	
+			}
+		}
+	}
+	
+	/**
+	 * @brief Start and stop the robot via a dedicated channel
+	 */
+	public class RobotMotionCoordinator  {
+		
+		private String zmqConnectionSpecification;
+		private ZMQ.Socket publisher = null;
+		
+		/* Protocol definition */
+		private byte CMD_STOP = 0x00;
+		private byte CMD_START = 0x01;
+		
+		public RobotMotionCoordinator() {
+			this("tcp://*:22422");
+		}
+		
+		public RobotMotionCoordinator(String zmqConnectionSpecification) {
+			this.zmqConnectionSpecification = zmqConnectionSpecification;
+			/* workaround for android.os.NetworkOnMainThreadException; better refactor towards AsyncTask */
+			StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+			StrictMode.setThreadPolicy(policy); //Min API = 9 (was 8)
+			
+	        ZMQ.Context context = ZMQ.context(1); // create globally?!?
+	        publisher = context.socket(ZMQ.PUB);
+	        publisher.bind(this.zmqConnectionSpecification);
+	        Log.i("RobotMotionCoordinator", "Init done.");
+		}
+		
+	
+		private void write(byte command)  {
+			try {
+				Log.i("RobotMotionCoordinator", "Trying to send command " + command);
+				byte[] dataBuffer = new byte[1]; // exactly one byte!
+				dataBuffer[0] = command;
+				publisher.send(dataBuffer);				
+			} catch (Exception e) {
+				Log.w("RobotMotionCoordinator", e);
+			}
+		}
+		
+		public void startMotion() {
+			write(CMD_START);
+		}
+		
+		public void stopMotion() {
+			write(CMD_STOP);
+		}
+		
+		public void cleanup() {
+			Log.i(logTag, "Shutting down RobotMotionCoordinator.");
 			if (publisher != null) {
 				publisher.close();	
 			}

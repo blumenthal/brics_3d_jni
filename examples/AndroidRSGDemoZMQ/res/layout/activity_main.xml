@@ -8,22 +8,6 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".MainActivity" >
 
-    <SeekBar
-        android:id="@+id/xSeekBar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginTop="32dp" />
-
-    <SeekBar
-        android:id="@+id/ySeekBar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_below="@+id/xSeekBar"
-        android:layout_marginTop="20dp" />
-
     <TextView
         android:id="@+id/textView1"
         android:layout_width="wrap_content"
@@ -79,5 +63,36 @@
         android:layout_below="@+id/TextView01"
         android:layout_marginTop="40dp"
         android:text="Objects:" />
+
+    <RadioButton
+        android:id="@+id/radioButton1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="15dp"
+        android:layout_toRightOf="@+id/TextView01"
+        android:text="RadioButton" />
+
+    <SeekBar
+        android:id="@+id/xSeekBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/radioButton1"
+        android:layout_marginTop="18dp" />
+
+    <SeekBar
+        android:id="@+id/ySeekBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/xSeekBar" />
+
+    <ToggleButton
+        android:id="@+id/motionRoggleButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/textViewNumberOfObjects"
+        android:layout_marginTop="18dp"
+        android:layout_toRightOf="@+id/textView1"
+        android:text="RobotMotion" />
 
 </RelativeLayout>
