@@ -294,6 +294,37 @@ JNIEXPORT jlong JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_getRootId
 	return reinterpret_cast<jlong>(rootId);
 }
 
+JNIEXPORT jlong JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_addGeometricNode
+  (JNIEnv* env, jclass, jlong parentIdPtr, jlong attributesPtr, jlong shapePtr, jlong timeStampPtr, jboolean forcedId) {
+
+	Id* parentId = reinterpret_cast<Id*>(parentIdPtr);
+	assert (parentId != 0);
+
+	vector<Attribute>* attributes = reinterpret_cast<vector<Attribute>* >(attributesPtr);
+	assert (attributes != 0);
+
+	Shape* shape = reinterpret_cast<Shape*>(shapePtr);
+	assert(shape != 0);
+	Shape::ShapePtr shapeSmartPtr(shape);
+
+	TimeStamp* timeStamp = reinterpret_cast<TimeStamp*>(timeStampPtr);
+	assert(timeStamp != 0);
+
+	LOG(DEBUG) << "addGeometricNode invoked. ";
+	if (wm != 0) {
+		Id* assignedId = new Id;
+		if(wm->scene.addGeometricNode(*parentId, *assignedId, *attributes, shapeSmartPtr, *timeStamp, forcedId)) {
+			jlong javaHandle = reinterpret_cast<jlong>(assignedId);
+			return javaHandle;
+		}
+	} else {
+		LOG(ERROR) << "World mode is not initialized.";
+	}
+
+	return 0;
+
+}
+
 JNIEXPORT void JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_insertTransform
   (JNIEnv *, jclass, jlong idPtr, jlong transformPtr) {
 
@@ -412,6 +443,21 @@ JNIEXPORT jlong JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_getGeometry
 	}
 	LOG(ERROR) << "World mode is not initialized.";
 	return 0;
+}
+
+JNIEXPORT jboolean JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_deleteNode
+  (JNIEnv* env, jclass, jlong idPtr) {
+
+	Id* id = reinterpret_cast<Id*>(idPtr);
+	assert (id != 0);
+
+	LOG(DEBUG) << "deleteNode invoked. ";
+	if (wm != 0) {
+		return wm->scene.deleteNode(*id);
+	}
+	LOG(ERROR) << "World mode is not initialized.";
+	return false;
+
 }
 
 JNIEXPORT jlong JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_getCurrentTransform

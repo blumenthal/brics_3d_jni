@@ -49,7 +49,7 @@ public class RsgJNI {
 //    bool setNodeAttributes(Id id, vector<Attribute> newAttributes);
 //    bool setTransform(Id id, IHomogeneousMatrix44::IHomogeneousMatrix44Ptr transform, TimeStamp timeStamp);
 //    bool setUncertainTransform(Id id, IHomogeneousMatrix44::IHomogeneousMatrix44Ptr transform, ITransformUncertainty::ITransformUncertaintyPtr uncertainty, TimeStamp timeStamp);
-//	bool deleteNode(Id id);
+//	  bool deleteNode(Id id);
 //    bool addParent(Id id, Id parentId);
 //    bool removeParent(Id id, Id parentId);	
 	
@@ -159,7 +159,7 @@ public class RsgJNI {
 	
 //  bool setNodeAttributes(Id id, vector<Attribute> newAttributes);
 //  bool setTransform(Id id, IHomogeneousMatrix44::IHomogeneousMatrix44Ptr transform, TimeStamp timeStamp);
-//	bool deleteNode(Id id);
+	public static native boolean deleteNode(long idPtr);	
 //  bool addParent(Id id, Id parentId);
 //  bool removeParent(Id id, Id parentId);	
 	

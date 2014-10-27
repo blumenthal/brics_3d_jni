@@ -28,9 +28,6 @@ public class SceneGraphNodesTest {
 
 	@Test
 	public void sceneObjetsTest() {
-		if (true) {
-			return;
-		}
 
 		String logTag = "sceneObjetsTest";
 		SceneObject virtualFence = null;
@@ -160,7 +157,7 @@ public class SceneGraphNodesTest {
 			ArrayList<Id> childs = new ArrayList<Id>();
 			childs = Rsg.getGroupChildren(id);
 			assertEquals(1, childs.size()); // there should be only one: The box
-			for (Id child: childs) {
+			for (Id child: childs) { // Delete all boxes
 				Logger.info(logTag, "Child ID = " + child.toString());			
 				Shape geometry = Rsg.getGeometry(child);
 				
@@ -172,21 +169,67 @@ public class SceneGraphNodesTest {
 					assertEquals(5, oldBox.getSizeX(), 0.001);
 					assertEquals(6.1, oldBox.getSizeY(), 0.001);
 					assertEquals(0, oldBox.getSizeZ(), 0.001);
+					
+					Rsg.deleteNode(child);
 				}
 			}
+			
+			childs.clear();
+			childs = Rsg.getGroupChildren(id);
+			assertEquals(0, childs.size()); // check it it has been deleted
+
+			/* Add new node */
+			attributes.clear();
+			attributes.add(new Attribute("shape", "Box"));
+			attributes.add(new Attribute("name", "virtual_fence"));
+			Box newBox = new Box(1.5,2.5,0);
+			Id newBoxId;
+			Rsg.addGeometricNode(id, attributes, newBox, stamp, false);
+
 		}
 		
-		
-//		wmHandle->scene.getNodes(queryAttributes, resultIds);
-//		for(vector<Id>::iterator it = resultIds.begin(); it!=resultIds.end(); ++it) { // delete all node  with "name", "virtual_fence"
-//			wmHandle->scene.deleteNode(*it);
-//		}
-		attributes.clear();
-		attributes.add(new Attribute("shape", "Box"));
-		attributes.add(new Attribute("name", "virtual_fence"));
-		Box newBox = new Box(1.5,2.5,0);
-		Id newBoxId;
-		//wmHandle->scene.addGeometricNode(boxTfId, newBoxId, attributes, newBox, wmHandle->now());
+	
+
+		ArrayList<Attribute> emptyAttributes = new ArrayList<Attribute>();
+		ArrayList<SceneObject> foundAllSceneOjects = Rsg.getSceneObjects(emptyAttributes);
+		Logger.info(logTag, "Result (all) = found " + foundAllSceneOjects.size() + " Scene object(s)");
+		assertEquals(1,  foundAllSceneOjects.size());
+
+		assertEquals(1.5, foundAllSceneOjects.get(0).getBox().getSizeX(), 0.0001);
+		assertEquals(2.5, foundAllSceneOjects.get(0).getBox().getSizeY(), 0.0001);
+		assertEquals(0.0, foundAllSceneOjects.get(0).getBox().getSizeZ(), 0.0001);
+
+		for (SceneObject sceneObject : foundAllSceneOjects) {
+
+			/* Just print everything */
+			Logger.info(logTag, "	Scene Object has ID = " + sceneObject.id);
+			Logger.info(logTag, "	Scene Object has parentId = " + sceneObject.parentId);
+
+			Logger.info(logTag, "	Scene Object has position (x,y,z) = (" 
+					+ sceneObject.getTransform().getX() + ", " 
+					+ sceneObject.getTransform().getY() + ", " 
+					+ sceneObject.getTransform().getZ() + ")");
+
+			if(sceneObject.getBox() != null) {
+				Logger.info(logTag, "	Scene Object has a box shape (x,y,z) =  (" 
+						+ sceneObject.getBox().getSizeX() + ", "
+						+ sceneObject.getBox().getSizeY() + ", "
+						+ sceneObject.getBox().getSizeZ() + ")");
+			} else if (sceneObject.getSphere() != null) {
+				Logger.info(logTag, "	Scene Object has a shere shape (radius) =  (" 
+						+ sceneObject.getSphere().getRadius() + ")");
+			} else {
+				Logger.info(logTag, "	Scene Object has unkonwn shape.");
+			}
+
+			for (Attribute a : sceneObject.getAttributes()) {
+				Logger.info(logTag, "	Scene Object has a attribute: " + a.toString()); 
+				if(a.key.compareTo("name") == 0) {
+					Logger.info(logTag, "	Found a named object: " + a.value);
+				}
+			}				
+			Logger.info(logTag, "	------------");
+		}
 
 		
 	}

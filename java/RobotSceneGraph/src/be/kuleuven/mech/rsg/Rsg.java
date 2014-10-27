@@ -91,6 +91,30 @@ public class Rsg {
 	/*
 	 * Nodes API
 	 */
+	public static Id addGeometricNode(Id parentId, ArrayList<Attribute> attributes, Shape shape, TimeStamp timeStamp, boolean forcedId) {
+		Id assignedId = null; 
+		
+		/* Prepare attributes as native list */
+		long attributesPtr = RsgJNI.createAttributeList();
+		assert (attributesPtr != 0);
+		
+		for(Attribute a: attributes) {
+			Logger.debug("addGeometricNode", "Adding attribute to query : " + a.toString());
+			RsgJNI.addAttributeToAttributeList(a.key, a.value, attributesPtr);
+		}
+		
+		long assignedIdPtr = RsgJNI.addGeometricNode(parentId.getIdPtr(), attributesPtr, shape.getShapePtr(), timeStamp.getTimeStampPtr(), forcedId);
+		if(assignedIdPtr != 0) {
+			assignedId = new Id(assignedIdPtr); 
+		}
+		
+		return assignedId;
+	}
+	
+	
+	//public static native long addGeometricNode(long parentIdPtr, long attributesPtr, long shapePtr, long timeStampPtr, boolean forcedId);
+	
+	
 	public static Id getRootId() {
 		long rootIdPtr = RsgJNI.getRootId();
 		Id rootId = new Id(rootIdPtr);
@@ -141,6 +165,10 @@ public class Rsg {
 		} 
 		
 		return null;
+	}
+	
+	public static boolean deleteNode(Id id) {
+		return RsgJNI.deleteNode(id.getIdPtr());
 	}
 	
 	/*

@@ -2,26 +2,25 @@ package be.kuleuven.mech.rsg;
 
 import be.kuleuven.mech.rsg.jni.RsgJNI;
 
-public class Sphere {
-
-	private long spherePtr = 0;
+public class Sphere extends Shape {
 
 	public Sphere(double radius) {
-		spherePtr = RsgJNI.createSphere(radius);
-    	assert(spherePtr != 0);
+		super();
+		shapePtr = RsgJNI.createSphere(radius);
+    	assert(shapePtr != 0);
 	}
 
 	public Sphere(long spherePtr) {
-		this.spherePtr = spherePtr;
-		assert(spherePtr != 0);
+		this.shapePtr = spherePtr;
+		assert(shapePtr != 0);
 	}
 	
 	public double getRadius() {
-        return RsgJNI.getSphereRadius(spherePtr);
+        return RsgJNI.getSphereRadius(shapePtr);
     }
 
-	public long getBoxPtr() {
-		return spherePtr;
+	public long getBoxPtr() { // we keep it for backwards compatibility
+		return shapePtr;
 	}
 	
 }

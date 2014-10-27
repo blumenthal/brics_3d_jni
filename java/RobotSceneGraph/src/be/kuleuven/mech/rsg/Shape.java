@@ -8,6 +8,8 @@ public class Shape {
 
 	// Note: For creation please use Box or Sphere geometries.
 	
+	protected Shape () {}
+	
 	public Shape(long shapePtr) {
 		this.shapePtr = shapePtr;
 		assert(shapePtr != 0);

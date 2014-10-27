@@ -2,34 +2,32 @@ package be.kuleuven.mech.rsg;
 
 import be.kuleuven.mech.rsg.jni.RsgJNI;
 
-public class Box {
-
-	private long boxPtr = 0;
+public class Box extends Shape {
 	
 	public Box(double sizeX, double sizeY, double sizeZ) {
-    	boxPtr = RsgJNI.createBox(sizeX, sizeY, sizeZ);
-    	assert(boxPtr != 0);  	
+		super();
+    	shapePtr = RsgJNI.createBox(sizeX, sizeY, sizeZ);
+    	assert(shapePtr != 0);  	
     }
 
 	public Box(long boxPtr) {
-		this.boxPtr = boxPtr;
-		assert(boxPtr != 0);
+		super(boxPtr);
 	}	
 	
 	public double getSizeX() {
-    	return RsgJNI.getBoxSizeX(boxPtr);
+    	return RsgJNI.getBoxSizeX(shapePtr);
     }
 
 	public double getSizeY() {
-    	return RsgJNI.getBoxSizeY(boxPtr);
+    	return RsgJNI.getBoxSizeY(shapePtr);
     }
 
 	public double getSizeZ() {
-    	return RsgJNI.getBoxSizeZ(boxPtr);
+    	return RsgJNI.getBoxSizeZ(shapePtr);
     }
 
-	public long getBoxPtr() {
-		return boxPtr;
+	public long getBoxPtr() { // we keep it for backwards compatibility
+		return shapePtr;
 	}
 
 	

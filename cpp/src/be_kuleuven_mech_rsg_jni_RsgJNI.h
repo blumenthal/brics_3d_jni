@@ -34,6 +34,9 @@ JNIEXPORT jboolean JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_resend
 JNIEXPORT jlong JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_getRootId
   (JNIEnv *, jclass);
 
+JNIEXPORT jlong JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_addGeometricNode
+  (JNIEnv *, jclass, jlong, jlong, jlong, jlong, jboolean);
+
 JNIEXPORT jlongArray JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_getNodes
   (JNIEnv *, jclass, jlong);
 
@@ -41,6 +44,9 @@ JNIEXPORT jlongArray JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_getGroupChildr
   (JNIEnv *, jclass, jlong);
 
 JNIEXPORT jlong JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_getGeometry
+  (JNIEnv *, jclass, jlong);
+
+JNIEXPORT jboolean JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_deleteNode
   (JNIEnv *, jclass, jlong);
 
 
