@@ -91,7 +91,7 @@ public class Main {
 
 		
 	
-		
+		RsgJNI.addGeometricNode(0, 0, 0, 0, false);
 
 		
 		Logger.info(logTag, "Done.");

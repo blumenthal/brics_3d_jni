@@ -15,6 +15,10 @@ public class Rsg {
 //
 //  void addSceneObject(SceneObject newObject, rsg::Id& assignedId);
 	
+	/*
+	 * "High level" API
+	 */
+	
 	/**
 	 * @brief Initialize an empty world model.
 	 * This _has_ to be done once before working with the world model.
@@ -82,6 +86,56 @@ public class Rsg {
 	public static void insertTransform(Id id, HomogeneousMatrix44 transform) {
 		RsgJNI.insertTransform(id.getIdPtr(), transform.getHomogeneousMatrix44Ptr());
 	}
+	
+	
+	/*
+	 * Nodes API
+	 */
+	public static Id getRootId() {
+		long rootIdPtr = RsgJNI.getRootId();
+		Id rootId = new Id(rootIdPtr);
+		return rootId;
+	}
+	
+	public static ArrayList<Id> getNodes(ArrayList<Attribute> attributes) {
+		ArrayList<Id> resultIds = new ArrayList<Id>();
+		
+		/* Prepare attributes as native list */
+		long attributesPtr = RsgJNI.createAttributeList();
+		assert (attributesPtr != 0);
+		
+		for(Attribute a: attributes) {
+			Logger.debug("getNodes", "Adding attribute to query : " + a.toString());
+			RsgJNI.addAttributeToAttributeList(a.key, a.value, attributesPtr);
+		}
+		
+		/* Perform query */
+		long[] results = RsgJNI.getNodes(attributesPtr); 
+		
+		/* Wrap up results */
+		for (long idPtr : results) {
+			resultIds.add(new Id(idPtr));
+		}
+		
+		return resultIds;
+	}
+	
+	public static ArrayList<Id> getGroupChildren (Id id) {
+		ArrayList<Id> children = new ArrayList<Id>();
+		
+		long[] childrenPtrs = RsgJNI.getGroupChildren(id.getIdPtr());
+		
+		/* Wrap up results */
+		for (long childPtr : childrenPtrs) {
+			children.add(new Id(childPtr));
+		}
+		
+		return children;
+	}
+	
+	/*
+	 * I/O
+	 */
 	
 	public static void setOutPort(IOutputPort outPort) {
 		RsgJNI.setOutPort(outPort);

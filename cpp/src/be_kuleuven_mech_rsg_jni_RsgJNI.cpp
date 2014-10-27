@@ -286,6 +286,14 @@ JNIEXPORT jboolean JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_resend
 	return false;
 }
 
+JNIEXPORT jlong JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_getRootId
+  (JNIEnv* env, jclass) {
+
+	Id* rootId = new Id();
+	*rootId = wm->getRootNodeId();
+	return reinterpret_cast<jlong>(rootId);
+}
+
 JNIEXPORT void JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_insertTransform
   (JNIEnv *, jclass, jlong idPtr, jlong transformPtr) {
 
@@ -310,6 +318,81 @@ JNIEXPORT void JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_insertTransform
 		LOG(ERROR) << "World mode is not initialized.";
 	}
 
+}
+
+JNIEXPORT jlongArray JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_getNodes
+  (JNIEnv* env, jclass, jlong attributesPtr) {
+
+	LOG(INFO) << "getNodes invoked.";
+
+	if (wm != 0) {
+
+		/* Set up query */
+		vector<Attribute>* attributes = reinterpret_cast<vector<Attribute>* >(attributesPtr);
+		assert (attributes != 0);
+
+		vector<Attribute> queryArributes = *attributes;
+		vector<Id> resultIds;
+
+		wm->scene.getNodes(queryArributes, resultIds);
+		jlong tmpResultIdsPtrs[resultIds.size()];
+
+		/* Browse the results */
+		for(unsigned int i = 0; i < resultIds.size() ; ++i) { // just loop over all objects
+
+			// We have to duplicate it on the heap
+			Id* tmpId = new Id(resultIds[i]); // trigger copy constructor
+			jlong javaHandle = reinterpret_cast<jlong>(tmpId);
+			tmpResultIdsPtrs[i] = javaHandle;
+			LOG(DEBUG)  << "javaHandle for id = " << javaHandle;
+
+		}
+
+		/* Wrap up results */
+		jlongArray javaResultObjects = env->NewLongArray(resultIds.size());
+		env->SetLongArrayRegion(javaResultObjects, 0, resultIds.size(), tmpResultIdsPtrs );
+
+		return javaResultObjects;
+	}
+	LOG(ERROR) << "World model is not initialized.";
+	return 0;
+
+}
+
+JNIEXPORT jlongArray JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_getGroupChildren
+  (JNIEnv* env, jclass, jlong idPtr) {
+	LOG(INFO) << "getGroupChildren invoked.";
+
+	Id* id = reinterpret_cast<Id*>(idPtr);
+	assert (id != 0);
+
+	if (wm != 0) {
+
+		vector<Id> childIds;
+		childIds.clear();
+
+		wm->scene.getGroupChildren(*id, childIds);
+		jlong tmpResultIdsPtrs[childIds.size()];
+
+		/* Browse the results */
+		for(unsigned int i = 0; i < childIds.size() ; ++i) { // just loop over all objects
+
+			// We have to duplicate it on the heap
+			Id* tmpId = new Id(childIds[i]); // trigger copy constructor
+			jlong javaHandle = reinterpret_cast<jlong>(tmpId);
+			tmpResultIdsPtrs[i] = javaHandle;
+			LOG(DEBUG)  << "javaHandle for id = " << javaHandle;
+
+		}
+
+		/* Wrap up results */
+		jlongArray javaResultObjects = env->NewLongArray(childIds.size());
+		env->SetLongArrayRegion(javaResultObjects, 0, childIds.size(), tmpResultIdsPtrs );
+
+		return javaResultObjects;
+	}
+	LOG(ERROR) << "World model is not initialized.";
+	return 0;
 }
 
 JNIEXPORT jlong JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_getCurrentTransform
@@ -521,6 +604,30 @@ JNIEXPORT jstring JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_getIdAsString
 	Id* id = reinterpret_cast<Id*>(idPtr);
 	assert (id != 0);
 	return (env)->NewStringUTF(id->toString().c_str());
+}
+
+JNIEXPORT jlong JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_createTimeStamp
+  (JNIEnv* env, jclass, jdouble timeStamp) {
+
+	TimeStamp* stamp = new TimeStamp(timeStamp, Units::Second);
+	return reinterpret_cast<jlong>(stamp);
+}
+
+JNIEXPORT jdouble JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_getTimeStampAsSeconds
+  (JNIEnv* env, jclass, jlong timeStampPtr) {
+
+	TimeStamp* timeStamp = reinterpret_cast<TimeStamp*>(timeStampPtr);
+	assert (timeStamp != 0);
+	return timeStamp->getSeconds();
+}
+
+JNIEXPORT jlong JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_getCurrentTimestamp
+  (JNIEnv* env, jclass) {
+
+	TimeStamp* timeStamp = new TimeStamp();
+	*timeStamp = wm->now();
+	return reinterpret_cast<jlong>(timeStamp);
+
 }
 
 JNIEXPORT jlong JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_createBox

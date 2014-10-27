@@ -31,6 +31,16 @@ JNIEXPORT jboolean JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_cleanup
 JNIEXPORT jboolean JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_resend
   (JNIEnv *, jclass);
 
+JNIEXPORT jlong JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_getRootId
+  (JNIEnv *, jclass);
+
+JNIEXPORT jlongArray JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_getNodes
+  (JNIEnv *, jclass, jlong);
+
+JNIEXPORT jlongArray JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_getGroupChildren
+  (JNIEnv *, jclass, jlong);
+
+
 /*
  * Class:     be_kuleuven_mech_rsg_jni_RsgJNI
  * Method:    getSceneObjects
@@ -150,6 +160,20 @@ JNIEXPORT jlong JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_createId
  */
 JNIEXPORT jstring JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_getIdAsString
   (JNIEnv *, jclass, jlong);
+
+/*
+ * (D)J
+ */
+JNIEXPORT jlong JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_createTimeStamp
+  (JNIEnv *, jclass, jdouble);
+
+JNIEXPORT jdouble JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_getTimeStampAsSeconds
+  (JNIEnv *, jclass, jlong);
+
+JNIEXPORT jlong JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_getCurrentTimestamp
+  (JNIEnv *, jclass);
+
+
 
 /*
  * Class:     be_kuleuven_mech_rsg_jni_RsgJNI
