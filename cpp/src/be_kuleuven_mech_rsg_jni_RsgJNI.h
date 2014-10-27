@@ -40,6 +40,9 @@ JNIEXPORT jlongArray JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_getNodes
 JNIEXPORT jlongArray JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_getGroupChildren
   (JNIEnv *, jclass, jlong);
 
+JNIEXPORT jlong JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_getGeometry
+  (JNIEnv *, jclass, jlong);
+
 
 /*
  * Class:     be_kuleuven_mech_rsg_jni_RsgJNI

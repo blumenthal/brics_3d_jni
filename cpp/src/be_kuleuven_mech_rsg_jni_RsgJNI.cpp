@@ -395,6 +395,25 @@ JNIEXPORT jlongArray JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_getGroupChildr
 	return 0;
 }
 
+JNIEXPORT jlong JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_getGeometry
+  (JNIEnv* env, jclass, jlong idPtr) {
+	Id* id = reinterpret_cast<Id*>(idPtr);
+	assert (id != 0);
+
+	LOG(DEBUG) << "getGeometry invoked. ";
+	if (wm != 0) {
+		TimeStamp dummy;
+		Shape::ShapePtr shape;
+		if(wm->scene.getGeometry(*id, shape, dummy)) {
+			jlong javaHandle = reinterpret_cast<jlong>(shape.get());
+			return javaHandle;
+		}
+		return 0;
+	}
+	LOG(ERROR) << "World mode is not initialized.";
+	return 0;
+}
+
 JNIEXPORT jlong JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_getCurrentTransform
   (JNIEnv *, jclass, jlong idPtr) {
 

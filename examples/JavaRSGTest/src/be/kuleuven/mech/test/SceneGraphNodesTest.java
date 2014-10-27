@@ -155,13 +155,24 @@ public class SceneGraphNodesTest {
 		resultIds = Rsg.getNodes(queryAttributes);
 		assertEquals(1, resultIds.size());
 		
-		/* Brows all box like parents */
+		/* Browse all box like parents */
 		for (Id id : resultIds) {
 			ArrayList<Id> childs = new ArrayList<Id>();
 			childs = Rsg.getGroupChildren(id);
 			assertEquals(1, childs.size()); // there should be only one: The box
 			for (Id child: childs) {
-				Logger.info(logTag, "Child ID = " + child.toString());
+				Logger.info(logTag, "Child ID = " + child.toString());			
+				Shape geometry = Rsg.getGeometry(child);
+				
+				if (geometry != null) {
+					Logger.info(logTag, "	found a shape: " + child.toString());	
+					assertTrue(geometry.getBox() != null);
+					assertTrue(geometry.getSphere() == null);
+					Box oldBox = geometry.getBox();
+					assertEquals(5, oldBox.getSizeX(), 0.001);
+					assertEquals(6.1, oldBox.getSizeY(), 0.001);
+					assertEquals(0, oldBox.getSizeZ(), 0.001);
+				}
 			}
 		}
 		

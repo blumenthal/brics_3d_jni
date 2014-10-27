@@ -133,6 +133,16 @@ public class Rsg {
 		return children;
 	}
 	
+	public static Shape getGeometry(Id id) {
+		long shapePtr = RsgJNI.getGeometry(id.getIdPtr());
+		
+		if (shapePtr != 0) {
+			return new Shape(shapePtr);			
+		} 
+		
+		return null;
+	}
+	
 	/*
 	 * I/O
 	 */
