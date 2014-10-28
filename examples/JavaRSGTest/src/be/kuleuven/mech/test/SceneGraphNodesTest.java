@@ -234,4 +234,43 @@ public class SceneGraphNodesTest {
 		
 	}
 
+	@Test
+	public void testUpdateBouncing() {
+		String logTag = "testUpdateBouncing";
+		
+
+		HomogeneousMatrix44 pose = new HomogeneousMatrix44(
+				1, 0, 0,	// rotation  
+				0, 1, 0, 
+				0, 0, 1,
+				4, 5.6, 7.8); // translation
+		
+
+		/* Add a some scene object  */
+		SceneObject someObject = new SceneObject();
+		Box box = new Box(6, 7.1, 2);//[m] 
+		someObject.addBox(box);		
+		ArrayList<Attribute> attributes = new ArrayList<Attribute>();
+		attributes.add(new Attribute("name", "some_thing"));
+		someObject.addAttributes(attributes);
+		someObject.addTransform(pose);
+		Id someObjectId = Rsg.addSceneObject(someObject);
+		
+		
+		HomogeneousMatrix44 newPose = new HomogeneousMatrix44(
+				1, 0, 0,	// rotation  
+				0, 1, 0, 
+				0, 0, 1,
+				4, 5.6, 7.8); // translation
+		
+		int i = 0;
+		int max = 10;
+		for (; i < max; i++) {
+			Logger.info(logTag, "Transform update " + i);
+			Rsg.insertTransform(someObjectId, newPose);
+		}
+		assertEquals(max, i);
+		
+	}
+	
 }
