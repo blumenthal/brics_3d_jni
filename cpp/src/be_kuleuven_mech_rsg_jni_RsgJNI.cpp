@@ -11,6 +11,7 @@
 #endif
 
 /* BRICS_3D includes for the world model */
+#include <brics_3d/core/Version.h>
 #include <brics_3d/core/HomogeneousMatrix44.h>
 #include <brics_3d/worldModel/WorldModel.h>
 #include <brics_3d/worldModel/sceneGraph/DotGraphGenerator.h>
@@ -203,7 +204,9 @@ JNIEXPORT jboolean JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_initialize
 	wmPrinter->setConfig(config);
 
 	/* See if the logger works right at the beginning. */
-	LOG(INFO) << "A new world model instance has been created. (build " << __DATE__ << " " << __TIME__ << ")";
+	Version version;
+	LOG(INFO) << "A new world model instance has been created. (version: " << version.getVersionAsString() <<
+			", build: " << __DATE__ << " " << __TIME__ << ")";
 
 	/* Init ports */
 #ifdef	BRICS_HDF5_ENABLE

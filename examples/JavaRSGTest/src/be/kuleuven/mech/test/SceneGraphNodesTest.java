@@ -2,7 +2,6 @@ package be.kuleuven.mech.test;
 
 import static org.junit.Assert.*;
 
-import java.sql.Time;
 import java.util.ArrayList;
 
 import org.junit.After;
@@ -238,6 +237,8 @@ public class SceneGraphNodesTest {
 	public void testUpdateBouncing() {
 		String logTag = "testUpdateBouncing";
 		
+		WorldModelSimleBridge ioLoopBackBridge = new WorldModelSimleBridge();
+		Rsg.setOutPort(ioLoopBackBridge);
 
 		HomogeneousMatrix44 pose = new HomogeneousMatrix44(
 				1, 0, 0,	// rotation  
@@ -257,20 +258,38 @@ public class SceneGraphNodesTest {
 		Id someObjectId = Rsg.addSceneObject(someObject);
 		
 		
-		HomogeneousMatrix44 newPose = new HomogeneousMatrix44(
-				1, 0, 0,	// rotation  
-				0, 1, 0, 
-				0, 0, 1,
-				4, 5.6, 7.8); // translation
+
 		
 		int i = 0;
-		int max = 10;
+		int max = 100;//100000; // The second value takes a while ... 
 		for (; i < max; i++) {
+
+			// Note: Currently HomogeneousMatrix44 cannot be reused as 
+			// it will cause a mix-up with the internal used smart pointers
+			// and lead to a segfault
+			HomogeneousMatrix44 newPose = new HomogeneousMatrix44(
+					1, 0, 0,	// rotation  
+					0, 1, 0, 
+					0, 0, 1,
+					i/10.0, 5.6, 7.8); // translation
+			
 			Logger.info(logTag, "Transform update " + i);
 			Rsg.insertTransform(someObjectId, newPose);
 		}
 		assertEquals(max, i);
-		
+
 	}
 	
+}
+
+class WorldModelSimleBridge implements IOutputPort {
+
+	public WorldModelSimleBridge() {}
+
+	@Override
+	public int write(byte[] dataBuffer, int dataLength) {
+		Logger.debug("WorldModelSimleBridge", "writing " + dataLength + " bytes.");
+		RsgJNI.writeUpdateToInputPort(dataBuffer, dataLength); // directly feed the update from out to input port
+		return 0;
+	}
 }
