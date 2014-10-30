@@ -887,15 +887,16 @@ JNIEXPORT jint JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_writeUpdateToInputPo
 	jboolean isCopy;
 	jbyte* a = env->GetByteArrayElements(dataBuffer, &isCopy);
 
-	char *buffer = new char [dataLength];
-	memcpy(buffer, a, dataLength);
-
-
-	//int returnValue =  port->write(buffer, length, transferredBytes);
-//	for (int i = 0; i < dataLength; ++i) {
-//		LOG(DEBUG) << std::hex << (unsigned char)buffer[i];
-//		LOG(DEBUG) << (int)buffer[i];
-//	}
+	char* buffer;
+	if(a != 0) { // cf. http://developer.android.com/training/articles/perf-jni.html#arrays
+		buffer = new char [dataLength];
+		memcpy(buffer, a, dataLength);
+		env->ReleaseByteArrayElements(dataBuffer, a, JNI_ABORT);
+	} else {
+		env->ReleaseByteArrayElements(dataBuffer, a, JNI_ABORT);
+		LOG(ERROR) << "writeUpdateToInputPort failed as data array cannot be obtained from JNI enviroment.";
+		return returnValue;
+	}
 
 	int transferredBytes;
 	if (wmUpdatesToHdf5deserializer != 0) {
