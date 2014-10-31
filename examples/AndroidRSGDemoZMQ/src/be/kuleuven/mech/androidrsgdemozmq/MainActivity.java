@@ -41,7 +41,7 @@ import org.zeromq.ZMQ;
 
 
 
-
+ 
 
 public class MainActivity extends Activity implements OnSeekBarChangeListener {
 
@@ -476,7 +476,7 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 					/* Receive data */
 					byte[] message = subscriber.recv(); // null Pointer
 					String text = new String(message, 0, message.length);
-					Log.d(logTag, "message: with length" +  message.length + " = " + text);
+					Log.d(logTag, "message: with length" +  message.length);// + " = " + text);
 					
 					/* Process data */
 					int processedBytes = RsgJNI.writeUpdateToInputPort(message, message.length);
@@ -502,7 +502,7 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 		}
 	}
 	
-	public class WorldModelUpdatesBroadcaster /*extends AsyncTask*/ implements IOutputPort {
+	public class WorldModelUpdatesBroadcaster /*extends AsyncTask*/ implements IOutputPort { 
 		
 		private String zmqConnectionSpecification;
 		private ZMQ.Socket publisher = null;
