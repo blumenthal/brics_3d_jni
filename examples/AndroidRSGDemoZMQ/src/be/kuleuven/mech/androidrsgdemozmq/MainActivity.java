@@ -17,6 +17,8 @@ import android.os.Bundle;
 import android.os.StrictMode;
 import android.app.Activity;
 import android.content.Context;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
@@ -26,11 +28,16 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.ToggleButton;
+
+
+
+
 
 
 
@@ -55,6 +62,8 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 	Box fenceBox = null;
 	HomogeneousMatrix44 obstaclePose = null;
 	Sphere obstacleShape = null; 
+	double fenceXDimension = 1.0;
+	double fenceYDimension = 2.0;
 	
 	/* GUI elements */
 	
@@ -63,6 +72,8 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 	private TextView xValueText;
 	private TextView yValueText;
 	private TextView numberOfObjectsText;
+	private EditText xValueFenceText;
+	private EditText yValueFenceText;
 	private ToggleButton motionToggle = null;
 	private Spinner sceneObjectPicker = null;
 	private ArrayAdapter<String> sceneObjectPickerAdapter;
@@ -88,6 +99,36 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 		yValueText.setText("no_value");
 		numberOfObjectsText = (TextView) findViewById(R.id.textViewNumberOfObjects);
 		numberOfObjectsText.setText("no_value");
+		
+		xValueFenceText = (EditText) findViewById(R.id.editText1);
+		xValueFenceText.setText("2.0");
+		xValueFenceText.addTextChangedListener(new TextWatcher() {
+
+			public void afterTextChanged(Editable s) {
+				double fenceXDimensionTmp = fenceXDimension;
+
+				Log.e("xValueFenceText", s.toString());
+				try {
+					fenceXDimension = Double.valueOf(s.toString());
+				} catch (Exception e) {
+					fenceXDimension = fenceXDimensionTmp; // recover
+				}
+			}
+
+			@Override
+			public void beforeTextChanged(CharSequence s, int start, int count,
+					int after) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void onTextChanged(CharSequence s, int start, int before,
+					int count) {				
+			}
+		});
+		yValueFenceText = (EditText) findViewById(R.id.editText2);
+		yValueFenceText.setText("3.0");
 		
 		sceneObjectPickerList = new ArrayList<String>();
 //		list.add("Goal"); 

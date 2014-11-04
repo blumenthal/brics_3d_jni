@@ -31,7 +31,8 @@
                     
         <activity
             android:name="be.kuleuven.mech.androidrsgdemozmq.MainActivity"
-            android:label="@string/app_name" >
+            android:label="@string/app_name"
+            android:windowSoftInputMode="stateHidden" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

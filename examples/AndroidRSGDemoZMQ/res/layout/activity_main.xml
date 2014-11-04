@@ -45,46 +45,11 @@
         android:layout_alignLeft="@+id/textViewXValue"
         android:text="TextView" />
 
-    <TextView
-        android:id="@+id/textViewNumberOfObjects"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/textView2"
-        android:layout_alignBottom="@+id/textView2"
-        android:layout_marginLeft="14dp"
-        android:layout_toRightOf="@+id/textView2"
-        android:text="Object(s)" />
-
-    <TextView
-        android:id="@+id/textView2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/TextView01"
-        android:layout_below="@+id/TextView01"
-        android:layout_marginTop="40dp"
-        android:text="Objects:" />
-
     <SeekBar
         android:id="@+id/ySeekBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/xSeekBar" />
-
-    <ToggleButton
-        android:id="@+id/motionRoggleButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/textViewNumberOfObjects"
-        android:layout_marginTop="18dp"
-        android:layout_toRightOf="@+id/textView1"
-        android:text="RobotMotion" />
-
-    <Spinner
-        android:id="@+id/spinner"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true" />
 
     <SeekBar
         android:id="@+id/xSeekBar"
@@ -93,5 +58,70 @@
         android:layout_alignLeft="@+id/ySeekBar"
         android:layout_below="@+id/spinner"
         android:layout_marginTop="17dp" />
+
+    <Spinner
+        android:id="@+id/spinner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/xSeekBar"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="63dp" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="37dp"
+        android:layout_toRightOf="@+id/TextView01"
+        android:text="Objects:" />
+
+    <TextView
+        android:id="@+id/textViewNumberOfObjects"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/textView2"
+        android:layout_alignBottom="@+id/textView2"
+        android:layout_toRightOf="@+id/textViewXValue"
+        android:text="Object(s)" />
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/TextView01"
+        android:layout_below="@+id/TextView01"
+        android:layout_marginTop="22dp"
+        android:text="Virtual fance dimensions: " />
+
+    <EditText
+        android:id="@+id/editText2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/motionRoggleButton"
+        android:layout_toRightOf="@+id/textView1"
+        android:cursorVisible="false"
+        android:ems="10"
+        android:focusable="true"
+        android:inputType="numberDecimal" />
+
+    <EditText
+        android:id="@+id/editText1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/textView3"
+        android:layout_toRightOf="@+id/TextView01"
+        android:cursorVisible="false"
+        android:ems="10"
+        android:focusable="true"
+        android:inputType="numberDecimal" />
+
+    <ToggleButton
+        android:id="@+id/motionRoggleButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/editText1"
+        android:layout_toRightOf="@+id/editText1"
+        android:text="RobotMotion" />
 
 </RelativeLayout>
