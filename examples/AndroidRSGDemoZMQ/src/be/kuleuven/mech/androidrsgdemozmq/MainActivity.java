@@ -1,5 +1,6 @@
 package be.kuleuven.mech.androidrsgdemozmq;
 
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -34,6 +35,8 @@ import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.ToggleButton;
+
+
 
 
 
@@ -80,7 +83,7 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 	List<String> sceneObjectPickerList = null;
 	String pickedScenObjectName  = "obstacle";
 	
-	boolean isFirstUpdate = true;
+	boolean isFirstUpdate = true; 
 	
 	
 	@Override
@@ -101,7 +104,6 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 		numberOfObjectsText.setText("no_value");
 		
 		xValueFenceText = (EditText) findViewById(R.id.editText1);
-		xValueFenceText.setText("2.0");
 		xValueFenceText.addTextChangedListener(new TextWatcher() {
 
 			public void afterTextChanged(Editable s) {
@@ -110,25 +112,40 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 				Log.e("xValueFenceText", s.toString());
 				try {
 					fenceXDimension = Double.valueOf(s.toString());
+					updateFenceBoundaries("virtual_fence", fenceXDimension, fenceYDimension);
 				} catch (Exception e) {
 					fenceXDimension = fenceXDimensionTmp; // recover
 				}
 			}
 
 			@Override
-			public void beforeTextChanged(CharSequence s, int start, int count,
-					int after) {
-				// TODO Auto-generated method stub
-				
+			public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+			@Override
+			public void onTextChanged(CharSequence s, int start, int before, int count) {}
+		});
+		yValueFenceText = (EditText) findViewById(R.id.editText2);
+		yValueFenceText.addTextChangedListener(new TextWatcher() {
+
+			public void afterTextChanged(Editable s) {
+				double fenceYDimensionTmp = fenceXDimension;
+
+				Log.e("yValueFenceText", s.toString());
+				try { 
+					fenceYDimension = Double.valueOf(s.toString());
+					updateFenceBoundaries("virtual_fence", fenceXDimension, fenceYDimension);
+				} catch (Exception e) {
+					fenceYDimension = fenceYDimensionTmp; // recover 
+				}
 			}
 
 			@Override
-			public void onTextChanged(CharSequence s, int start, int before,
-					int count) {				
-			}
+			public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+			@Override
+			public void onTextChanged(CharSequence s, int start, int before, int count) {}
 		});
-		yValueFenceText = (EditText) findViewById(R.id.editText2);
-		yValueFenceText.setText("3.0");
+
 		
 		sceneObjectPickerList = new ArrayList<String>();
 //		list.add("Goal"); 
@@ -179,6 +196,8 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 
 		
 		initializeWorldModel();
+		xValueFenceText.setText("2.0");
+		yValueFenceText.setText("3.0");
 		coordinator = new RobotMotionCoordinator("tcp://*:22422");
 		
 		
@@ -328,6 +347,57 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 		}
 	}
 	
+	public void updateFenceBoundaries(String name, double x, double y) {
+		
+	
+		/* update fence geometry by creation of a new geometry */
+		ArrayList<Attribute> queryAttributes = new ArrayList<Attribute>();
+		ArrayList<Id> resultIds = new ArrayList<Id>();
+		queryAttributes.clear();
+		resultIds.clear();
+		queryAttributes.add(new Attribute("name", name)); // e.g. name "virtual_fence"
+		resultIds = Rsg.getNodes(queryAttributes);
+		
+		if (resultIds.size() < 1) {
+			Logger.error(logTag , "updateFenceBoundaries: object with name = " + name + " does not exist.");
+			return;
+		}
+		
+		if (resultIds.size() >1) {
+			Logger.error(logTag , "updateFenceBoundaries: " + resultIds.size() + " objects found. ");  
+		}
+		
+		/* Browse all box scene objects with that name tag */
+		for (Id id : resultIds) {
+			ArrayList<Id> childs = new ArrayList<Id>();
+			childs = Rsg.getGroupChildren(id);
+
+			/* We expect only one, but we will delete all discovered boxes */
+			for (Id child: childs) { 
+				Logger.debug(logTag, "Child ID = " + child.toString());			
+				Shape geometry = Rsg.getGeometry(child);
+				
+				if (geometry != null) {
+					Logger.debug(logTag, "	found a shape: " + child.toString());	
+					if(geometry.getBox() != null) {
+						Logger.debug(logTag, "	found a box, deleting it: " + child.toString());	
+						//Box oldBox = geometry.getBox();
+						Rsg.deleteNode(child);
+					}
+				}
+			}
+			
+			/* Add new node */
+			ArrayList<Attribute> attributes = new ArrayList<Attribute>();
+			attributes.clear();
+//			attributes.add(new Attribute("shape", "Box"));
+//			attributes.add(new Attribute("name", "virtual_fence"));
+			Box newBox = new Box(x,y,0);
+			Id newBoxId;
+			TimeStamp dummyStamp = new TimeStamp(10.0);
+			Rsg.addGeometricNode(id, attributes, newBox, dummyStamp, false);
+		}
+	}
 	public void displayObstacleCoordinates() {
 		double x = -1.0;
 		double y = -1.0;
