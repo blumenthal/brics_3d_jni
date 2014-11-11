@@ -62,8 +62,10 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 	String logTag = "YouBotWorldModel";
 	SceneObject virtualFence = null;
 	SceneObject obstacle = null;
+	SceneObject goal = null;
 	Box fenceBox = null;
 	HomogeneousMatrix44 obstaclePose = null;
+	HomogeneousMatrix44 goalPose = null;
 	Sphere obstacleShape = null; 
 	double fenceXDimension = 1.0;
 	double fenceYDimension = 2.0;
@@ -215,7 +217,8 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 		
 		
 		virtualFence = new SceneObject();
-		obstacle = new SceneObject(); 
+		obstacle = new SceneObject();
+		goal = new SceneObject();
 
 		fenceBox = new Box(5, 6.1, 0);//[m] 
 		virtualFence.addBox(fenceBox);								
@@ -239,12 +242,25 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 		obstacle.addAttributes(attributes);
 		Log.i(logTag, "Spere = " + obstacleShape.getRadius());   
 
+		goalPose = new HomogeneousMatrix44(
+				1, 0, 0, // rotation  
+				0, 1, 0, 
+				0, 0, 1,
+				0.1, 0.1, 0); // translation
+		goal.addTransform(goalPose);
+		//shape?
+		attributes.clear();
+		attributes.add(new Attribute("name", "goal"));
+		goal.addAttributes(attributes);
 
 		Id fenceId = Rsg.addSceneObject(virtualFence);
 		Log.i(logTag, "Added virtualFence with ID = " + fenceId.toString());  
 		Id obstacleId = Rsg.addSceneObject(obstacle);
 		Log.i(logTag, "Added obstaceId with ID = " + obstacleId.toString());  
 				
+		Id goalId = Rsg.addSceneObject(goal);
+		Log.i(logTag, "Added obstaceId with ID = " + goalId.toString());  
+		
 		displayObstacleCoordinates();
 		
 		
