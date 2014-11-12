@@ -7,8 +7,8 @@ An RSG example that uses ZeroMQ (ZMQ) as transportation layer.
 It is designed to be used together with the tablet demo of 
 [ubx_robotscenegraph](https://github.com/blumenthal/ubx_robotscenegraph).
 
-Instalation
------------
+Installation
+------------
 
-Please refer to [Example](examples/README.md)
+Please refer to [Examples](../README.md)
  
