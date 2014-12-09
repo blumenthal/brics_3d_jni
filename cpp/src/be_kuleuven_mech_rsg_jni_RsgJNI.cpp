@@ -14,6 +14,7 @@
 #include <brics_3d/core/Version.h>
 #include <brics_3d/core/HomogeneousMatrix44.h>
 #include <brics_3d/worldModel/WorldModel.h>
+#include <brics_3d/worldModel/sceneGraph/RemoteRootNodeAutoMounter.h>
 #include <brics_3d/worldModel/sceneGraph/DotGraphGenerator.h>
 #include <brics_3d/worldModel/sceneGraph/HDF5UpdateSerializer.h>
 #include <brics_3d/worldModel/sceneGraph/HDF5UpdateDeserializer.h>
@@ -45,6 +46,7 @@ brics_3d::rsg::DotGraphGenerator* wmPrinter = 0;
 HDF5UpdateDeserializer* wmUpdatesToHdf5deserializer = 0;
 HDF5UpdateSerializer* wmUpdatesToHdf5Serializer = 0;
 SceneGraphToUpdatesTraverser* wmResender = 0;
+RemoteRootNodeAutoMounter* wmAutoMounter = 0;
 
 /*
  * JNI helper functions
@@ -197,6 +199,10 @@ JNIEXPORT jboolean JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_initialize
 	Logger::setListener(androidLogger);
 #endif
 
+    /* Use auto mount policy */
+	wmAutoMounter = new RemoteRootNodeAutoMounter(&wm->scene, wm->getRootNodeId()); //mount everything relative to root node
+	wm->scene.attachUpdateObserver(wmAutoMounter);
+
 	/* Setup graph printer helper tool */
 	wmPrinter = new brics_3d::rsg::DotGraphGenerator();
 	VisualizationConfiguration config;
@@ -239,6 +245,11 @@ JNIEXPORT jboolean JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_cleanup
 	if(wmPrinter) {
 		delete wmPrinter;
 		wmPrinter = 0;
+	}
+
+	if (wmAutoMounter) {
+		delete wmAutoMounter;
+		wmAutoMounter = 0;
 	}
 
 #ifdef	BRICS_HDF5_ENABLE
