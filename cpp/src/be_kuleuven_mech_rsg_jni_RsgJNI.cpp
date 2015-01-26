@@ -16,6 +16,7 @@
 #include <brics_3d/worldModel/WorldModel.h>
 #include <brics_3d/worldModel/sceneGraph/RemoteRootNodeAutoMounter.h>
 #include <brics_3d/worldModel/sceneGraph/DotGraphGenerator.h>
+#include <brics_3d/worldModel/sceneGraph/DotVisualizer.h>
 #include <brics_3d/worldModel/sceneGraph/HDF5UpdateSerializer.h>
 #include <brics_3d/worldModel/sceneGraph/HDF5UpdateDeserializer.h>
 #include <brics_3d/worldModel/sceneGraph/SceneGraphToUpdatesTraverser.h>
@@ -43,10 +44,13 @@ const char *interfaceClassPath = "be/kuleuven/mech/rsg/jni/RsgJNI";	// "Path" to
 brics_3d::WorldModel* wm = 0;
 Logger::Listener*  androidLogger;
 brics_3d::rsg::DotGraphGenerator* wmPrinter = 0;
+brics_3d::rsg::DotVisualizer* wmDotGraphSaver = 0;
 HDF5UpdateDeserializer* wmUpdatesToHdf5deserializer = 0;
 HDF5UpdateSerializer* wmUpdatesToHdf5Serializer = 0;
 SceneGraphToUpdatesTraverser* wmResender = 0;
 RemoteRootNodeAutoMounter* wmAutoMounter = 0;
+
+bool saveDotFiles = true;
 
 /*
  * JNI helper functions
@@ -206,8 +210,18 @@ JNIEXPORT jboolean JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_initialize
 	/* Setup graph printer helper tool */
 	wmPrinter = new brics_3d::rsg::DotGraphGenerator();
 	VisualizationConfiguration config;
-	config.abbreviateIds = false; // We cant to see the complete IDs for debugging
+	config.abbreviateIds = false; // We want to see the complete IDs for debugging
 	wmPrinter->setConfig(config);
+
+	if(saveDotFiles) {
+		wmDotGraphSaver = new brics_3d::rsg::DotVisualizer(&wm->scene);
+		VisualizationConfiguration dotConfig;
+		config.abbreviateIds = true;
+		wmDotGraphSaver->setConfig(dotConfig);
+		wmDotGraphSaver->setKeepHistory(true);
+		wmDotGraphSaver->setFileName("/mnt/sdcard/rsg/rsg_current_graph"); // Assumes the folder "rsg" has been created beforehands.
+		wm->scene.attachUpdateObserver(wmDotGraphSaver);
+	}
 
 	/* See if the logger works right at the beginning. */
 	Version version;
