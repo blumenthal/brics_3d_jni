@@ -8,13 +8,14 @@ import be.kuleuven.mech.rsg.jni.RsgJNI;
 public class Main {
 
 	public static void main(String[] args) {
-		System.out.println("Test for RSG-JIN on a x86 architecture.");
+		System.out.println("Test for RSG-JNI on a x86 architecture.");
 		
 		/* IMPORTANT: Don't use the Android logger as it is not available. 
 		 * Otherwise it will throw  java.lang.NoClassDefFoundError: android/util/Log 
 		 */
 		Logger.setUseAndroidLogger(false);
-		Rsg.initializeWorldModel(); // always start with that one.
+		Rsg.initializeWorldModel(); // _always_ start with that one.
+		Rsg.setDotFilePath("/tmp"); // optional 
 		
 		String logTag = "'JavaRSGTest";
 		SceneObject virtualFence = null;
@@ -89,9 +90,8 @@ public class Main {
 		foundAllSceneOjects = Rsg.getSceneObjects(emptyAttributes);
 		Logger.info(logTag, "Result (all;again) = found " + foundAllSceneOjects.size() + " Scene object(s)");
 
-		
-	
-		RsgJNI.addGeometricNode(0, 0, 0, 0, false);
+		TimeStamp dummyStamp = new TimeStamp(1.0);
+		Id geode = Rsg.addGeometricNode(Rsg.getRootId(), attributes, obstacleShape, dummyStamp, false);
 
 		
 		Logger.info(logTag, "Done.");

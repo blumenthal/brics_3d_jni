@@ -239,4 +239,7 @@ public class RsgJNI {
 		return -1;
 	}
 	
+	/* Debug */
+	public static native boolean setDotFilePath(String pathName);
+	
 }

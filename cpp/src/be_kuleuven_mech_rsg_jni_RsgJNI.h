@@ -320,6 +320,14 @@ JNIEXPORT void JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_dispose
 JNIEXPORT jint JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_writeUpdateToInputPort
   (JNIEnv *, jclass, jbyteArray, jint);
 
+/*
+ * Class:     be_kuleuven_mech_rsg_jni_RsgJNI
+ * Method:    setDotFilePath
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_setDotFilePath
+  (JNIEnv *, jclass, jstring);
+
 #ifdef __cplusplus
 }
 #endif

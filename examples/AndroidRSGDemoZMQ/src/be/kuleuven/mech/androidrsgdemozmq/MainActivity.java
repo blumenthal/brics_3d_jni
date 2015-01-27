@@ -66,7 +66,7 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 	Box fenceBox = null;
 	HomogeneousMatrix44 obstaclePose = null;
 	HomogeneousMatrix44 goalPose = null;
-	Sphere obstacleShape = null; 
+	Sphere obstacleShape = null;  
 	double fenceXDimension = 1.0;
 	double fenceYDimension = 2.0;
 	
@@ -87,7 +87,7 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 	
 	boolean isFirstUpdate = true; 
 	
-	
+		
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -196,7 +196,6 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 		});
 		
 
-		
 		initializeWorldModel();
 		xValueFenceText.setText("2.0");
 		yValueFenceText.setText("3.0");
@@ -208,8 +207,10 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 	
 	public void initializeWorldModel() {
 		
-	
-		Rsg.initializeWorldModel(); // always start with that one.
+		Rsg.initializeWorldModel(); 	 // Always start with that one.
+		
+		String dotFilePath = "/mnt/sdcard/rsg"; 
+		Rsg.setDotFilePath(dotFilePath); // Sets path and enables storage of dot files. (optional)
 
 //		WorldModelUpdatesBroadcaster outputPort = new WorldModelUpdatesBroadcaster("tcp://192.168.1.101:11411");
 		outputPort = new WorldModelUpdatesBroadcaster("tcp://*:11411");
@@ -253,14 +254,20 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 		attributes.add(new Attribute("name", "goal"));
 		goal.addAttributes(attributes);
 
-		Id fenceId = Rsg.addSceneObject(virtualFence);
-		Log.i(logTag, "Added virtualFence with ID = " + fenceId.toString());  
-		Id obstacleId = Rsg.addSceneObject(obstacle);
-		Log.i(logTag, "Added obstaceId with ID = " + obstacleId.toString());  
-				
-		Id goalId = Rsg.addSceneObject(goal);
-		Log.i(logTag, "Added obstaceId with ID = " + goalId.toString());  
+//		if(!namedObjcetExistsAlready("virtual_fence")) {
+			Id fenceId = Rsg.addSceneObject(virtualFence);
+			Log.i(logTag, "Added virtualFence with ID = " + fenceId.toString()); 
+//		}	
 		
+//		if(!namedObjcetExistsAlready("obstacle")) {
+			Id obstacleId = Rsg.addSceneObject(obstacle);
+			Log.i(logTag, "Added obstaceId with ID = " + obstacleId.toString());  
+//		}	
+		
+//		if(!namedObjcetExistsAlready("goal")) {
+			Id goalId = Rsg.addSceneObject(goal);
+			Log.i(logTag, "Added obstaceId with ID = " + goalId.toString());  
+//		}
 		displayObstacleCoordinates();
 		
 		
@@ -280,7 +287,7 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 				0, 1, 0, 
 				0, 0, 1,
 				3.3, 4.4, 0); // translation
-		Rsg.insertTransform(obstacleId, obstaclePoseUpdate);  
+	//	Rsg.insertTransform(obstacleId, obstaclePoseUpdate);  
 		
 		displayObstacleCoordinates();
 		
@@ -291,7 +298,7 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 				0, 1, 0, 
 				0, 0, 1,
 				3.4, 4.5, 0); // translation
-		Rsg.insertTransform(obstacleId, obstaclePoseUpdate2);   
+	//	Rsg.insertTransform(obstacleId, obstaclePoseUpdate2);   
 		
 		foundAllSceneOjects.clear();
 		foundAllSceneOjects = Rsg.getSceneObjects(emptyAttributes);
@@ -307,11 +314,12 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 		int processedBytes = RsgJNI.writeUpdateToInputPort(testData, testData.length);
 		
 //		listenerThread = new Thread(new WorldModelUpdatesListener());
-//		listenerThread = new Thread(new WorldModelUpdatesListener("tcp://192.168.1.101:11511"));
-		listenerThread = new Thread(new WorldModelUpdatesListener("tcp://192.168.1.105:11511"));
+		listenerThread = new Thread(new WorldModelUpdatesListener("tcp://192.168.1.100:11511"));  
+//		listenerThread = new Thread(new WorldModelUpdatesListener("tcp://192.168.1.105:11511"));
+//		listenerThread = new Thread(new WorldModelUpdatesListener("tcp://192.168.10.225:11511")); // @ robolab
 		listenerThread.start();
 		
-		displayObstacleCoordinates();
+		displayObstacleCoordinates(); 
 		
 
 		Rsg.resendWorldModel(); 
@@ -361,6 +369,22 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 			
 			Log.i(logTag, "	------------");
 		}
+	}
+	
+	public boolean namedObjcetExistsAlready(String name) {
+		
+		ArrayList<Attribute> queryAttributes = new ArrayList<Attribute>();
+		ArrayList<Id> resultIds = new ArrayList<Id>();
+		queryAttributes.clear();
+		resultIds.clear();
+		queryAttributes.add(new Attribute("name", name)); // e.g. name "virtual_fence"
+		resultIds = Rsg.getNodes(queryAttributes);
+		
+		if(resultIds.size() > 0) {
+			return true;
+		}
+		
+		return false;
 	}
 	
 	public void updateFenceBoundaries(String name, double x, double y) {
@@ -495,8 +519,7 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 	}
 	
     @Override
-    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-    	
+    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {    	
     	// change progress text label with current seekbar value
     	//ValueText.setText("The value is: "+progress + " " + seekBar.getId());
     	// change action text label to changing
@@ -555,7 +578,8 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
     @Override
     public void onStopTrackingTouch(SeekBar seekBar) {
     	seekBar.setSecondaryProgress(seekBar.getProgress());
-    	//yValueText.setText("ended tracking touch");    	
+    	//yValueText.setText("ended tracking touch"); 
+    		
     }
     
 

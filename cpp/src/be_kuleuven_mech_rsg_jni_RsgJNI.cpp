@@ -50,7 +50,8 @@ HDF5UpdateSerializer* wmUpdatesToHdf5Serializer = 0;
 SceneGraphToUpdatesTraverser* wmResender = 0;
 RemoteRootNodeAutoMounter* wmAutoMounter = 0;
 
-bool saveDotFiles = true;
+bool saveDotFiles = false;
+std::string dotFileName = ""; // path + filename
 
 /*
  * JNI helper functions
@@ -212,16 +213,6 @@ JNIEXPORT jboolean JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_initialize
 	VisualizationConfiguration config;
 	config.abbreviateIds = false; // We want to see the complete IDs for debugging
 	wmPrinter->setConfig(config);
-
-	if(saveDotFiles) {
-		wmDotGraphSaver = new brics_3d::rsg::DotVisualizer(&wm->scene);
-		VisualizationConfiguration dotConfig;
-		config.abbreviateIds = true;
-		wmDotGraphSaver->setConfig(dotConfig);
-		wmDotGraphSaver->setKeepHistory(true);
-		wmDotGraphSaver->setFileName("/mnt/sdcard/rsg/rsg_current_graph"); // Assumes the folder "rsg" has been created beforehands.
-		wm->scene.attachUpdateObserver(wmDotGraphSaver);
-	}
 
 	/* See if the logger works right at the beginning. */
 	Version version;
@@ -938,3 +929,35 @@ JNIEXPORT jint JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_writeUpdateToInputPo
 	delete buffer;
 	return returnValue;
 }
+
+JNIEXPORT jboolean JNICALL Java_be_kuleuven_mech_rsg_jni_RsgJNI_setDotFilePath
+  (JNIEnv* env, jclass, jstring pathName) {
+
+	jboolean isCopy;
+    const char* pathNameAsChar = env->GetStringUTFChars(pathName, &isCopy);
+    string tmpPathName(pathNameAsChar);
+    dotFileName = tmpPathName + "/rsg_jni"; // we adde a default file name to denote that data is generated as part of this JNI.
+
+	LOG(DEBUG) << "Folder and file name for dot files has been set to: " << dotFileName;
+
+	if(!saveDotFiles) {
+		wmDotGraphSaver = new brics_3d::rsg::DotVisualizer(&wm->scene);
+		VisualizationConfiguration dotConfig;
+		dotConfig.abbreviateIds = true;
+		wmDotGraphSaver->setConfig(dotConfig);
+		wmDotGraphSaver->setKeepHistory(true);
+		LOG(DEBUG) << "DotVisualizer is enabled with file name: " << dotFileName;
+		wmDotGraphSaver->setFileName(dotFileName); // Assumes the folder has been created beforehands. Jave client is in charge of that.
+		wm->scene.attachUpdateObserver(wmDotGraphSaver);
+		saveDotFiles = true;
+	} else {
+		LOG(WARNING) << "DotVisualizer is reconfigured with with file name: " << dotFileName;
+		assert(wmDotGraphSaver);
+		wmDotGraphSaver->setFileName(dotFileName);
+	}
+
+	env->ReleaseStringUTFChars(pathName, pathNameAsChar);
+	return true;
+}
+
+/* EOF */
